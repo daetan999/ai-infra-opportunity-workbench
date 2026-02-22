@@ -5,25 +5,6 @@ from datetime import datetime, timezone
 import time
 import yfinance as yf
 
-try:
-    from data.cache import COMPANY_CACHE as _MACRO_CACHE
-except ImportError:
-    _MACRO_CACHE = None
-
-def _yf_call_macro(fn, retries: int = 3, base_delay: float = 2.0):
-    """429-backoff wrapper for macro.py yfinance calls."""
-    for attempt in range(retries):
-        try:
-            return fn()
-        except Exception as exc:
-            msg = str(exc).lower()
-            is_rl = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
-            if is_rl and attempt < retries - 1:
-                time.sleep(base_delay * (2 ** attempt))
-            else:
-                return None
-    return None
-
 
 @dataclass
 class MacroReport:
@@ -36,15 +17,7 @@ _CACHE: dict = {"ts": 0.0, "report": None}
 
 def _safe_last_and_change(symbol: str):
     t = yf.Ticker(symbol)
-    _mk = f"hist:{symbol}:5d:1d"
-    if _MACRO_CACHE is not None:
-        hist = _MACRO_CACHE.get_or_set(
-            _mk,
-            lambda _s=symbol: _yf_call_macro(lambda: yf.Ticker(_s).history(period="5d", interval="1d")),
-            ttl_sec=1800,  # 30 min — macro prices refresh fast enough
-        )
-    else:
-        hist = _yf_call_macro(lambda: t.history(period="5d", interval="1d"))
+    hist = t.history(period="5d", interval="1d")
     if hist is None or hist.empty:
         return None, None
     closes = hist["Close"].dropna()
