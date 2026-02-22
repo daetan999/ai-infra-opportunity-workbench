@@ -1,5 +1,25 @@
 import math
+import time as _time
 from datetime import datetime, timezone
+
+try:
+    from data.cache import CHAIN_CACHE as _CHAIN_CACHE
+except ImportError:
+    _CHAIN_CACHE = None
+
+def _yf_call_pg(fn, retries: int = 3, base_delay: float = 2.0):
+    """429-backoff wrapper for price_guidance yfinance calls."""
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:
+            msg = str(exc).lower()
+            is_rl = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
+            if is_rl and attempt < retries - 1:
+                _time.sleep(base_delay * (2 ** attempt))
+            else:
+                return None
+    return None
 
 def widen_factor_from_confidence(conf_pct: float | None):
     if conf_pct is None:
@@ -243,7 +263,17 @@ def recommend_options_contracts(
         return []
 
     try:
-        chain = t.option_chain(expiry)
+        _ck = f"chain:{getattr(t, 'ticker', 'unknown')}:{expiry}"
+        if _CHAIN_CACHE is not None:
+            chain = _CHAIN_CACHE.get_or_set(
+                _ck,
+                lambda: _yf_call_pg(lambda: t.option_chain(expiry)),
+                ttl_sec=600,
+            )
+        else:
+            chain = _yf_call_pg(lambda: t.option_chain(expiry))
+        if chain is None:
+            return []
     except Exception:
         return []
 
