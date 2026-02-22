@@ -1,0 +1,406 @@
+{
+  "version": 2,
+  "generated_at": 1771681655.642703,
+  "ttl_seconds": 604800,
+  "data": [
+    {
+      "symbol": "ASX",
+      "exchange": "NYSE",
+      "name": "ASE Technology Holding Co., Ltd.",
+      "display": "ASE Technology Holding Co., Ltd. (NYSE:ASX)",
+      "sector_bucket": "OSAT / Packaging"
+    },
+    {
+      "symbol": "ASML",
+      "exchange": "NASDAQ",
+      "name": "ASML Holding N.V.",
+      "display": "ASML Holding N.V. (NASDAQ:ASML)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "AEIS",
+      "exchange": "NASDAQ",
+      "name": "Advanced Energy Industries, Inc.",
+      "display": "Advanced Energy Industries, Inc. (NASDAQ:AEIS)",
+      "sector_bucket": "Power / Industrial"
+    },
+    {
+      "symbol": "AMD",
+      "exchange": "NASDAQ",
+      "name": "Advanced Micro Devices, Inc.",
+      "display": "Advanced Micro Devices, Inc. (NASDAQ:AMD)",
+      "sector_bucket": "CPU / GPU"
+    },
+    {
+      "symbol": "ALGM",
+      "exchange": "NASDAQ",
+      "name": "Allegro MicroSystems, Inc.",
+      "display": "Allegro MicroSystems, Inc. (NASDAQ:ALGM)",
+      "sector_bucket": "Auto / Sensors"
+    },
+    {
+      "symbol": "AMKR",
+      "exchange": "NASDAQ",
+      "name": "Amkor Technology, Inc.",
+      "display": "Amkor Technology, Inc. (NASDAQ:AMKR)",
+      "sector_bucket": "OSAT / Packaging"
+    },
+    {
+      "symbol": "ADI",
+      "exchange": "NASDAQ",
+      "name": "Analog Devices, Inc.",
+      "display": "Analog Devices, Inc. (NASDAQ:ADI)",
+      "sector_bucket": "Analog"
+    },
+    {
+      "symbol": "AMAT",
+      "exchange": "NASDAQ",
+      "name": "Applied Materials, Inc.",
+      "display": "Applied Materials, Inc. (NASDAQ:AMAT)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "ANET",
+      "exchange": "NYSE",
+      "name": "Arista Networks, Inc.",
+      "display": "Arista Networks, Inc. (NYSE:ANET)",
+      "sector_bucket": "Networking"
+    },
+    {
+      "symbol": "ARM",
+      "exchange": "NASDAQ",
+      "name": "Arm Holdings plc",
+      "display": "Arm Holdings plc (NASDAQ:ARM)",
+      "sector_bucket": "CPU / IP"
+    },
+    {
+      "symbol": "ACLS",
+      "exchange": "NASDAQ",
+      "name": "Axcelis Technologies, Inc.",
+      "display": "Axcelis Technologies, Inc. (NASDAQ:ACLS)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "AVGO",
+      "exchange": "NASDAQ",
+      "name": "Broadcom Inc.",
+      "display": "Broadcom Inc. (NASDAQ:AVGO)",
+      "sector_bucket": "Networking / ASIC"
+    },
+    {
+      "symbol": "CDNS",
+      "exchange": "NASDAQ",
+      "name": "Cadence Design Systems, Inc.",
+      "display": "Cadence Design Systems, Inc. (NASDAQ:CDNS)",
+      "sector_bucket": "EDA"
+    },
+    {
+      "symbol": "CAMT",
+      "exchange": "NASDAQ",
+      "name": "Camtek Ltd.",
+      "display": "Camtek Ltd. (NASDAQ:CAMT)",
+      "sector_bucket": "Metrology / Inspection"
+    },
+    {
+      "symbol": "CRUS",
+      "exchange": "NASDAQ",
+      "name": "Cirrus Logic, Inc.",
+      "display": "Cirrus Logic, Inc. (NASDAQ:CRUS)",
+      "sector_bucket": "Mixed-signal"
+    },
+    {
+      "symbol": "COHU",
+      "exchange": "NASDAQ",
+      "name": "Cohu, Inc.",
+      "display": "Cohu, Inc. (NASDAQ:COHU)",
+      "sector_bucket": "Test / ATE"
+    },
+    {
+      "symbol": "DELL",
+      "exchange": "NYSE",
+      "name": "Dell Technologies Inc.",
+      "display": "Dell Technologies Inc. (NYSE:DELL)",
+      "sector_bucket": "Servers / Systems"
+    },
+    {
+      "symbol": "DIOD",
+      "exchange": "NASDAQ",
+      "name": "Diodes Incorporated",
+      "display": "Diodes Incorporated (NASDAQ:DIOD)",
+      "sector_bucket": "Discrete / Power"
+    },
+    {
+      "symbol": "ENTG",
+      "exchange": "NASDAQ",
+      "name": "Entegris, Inc.",
+      "display": "Entegris, Inc. (NASDAQ:ENTG)",
+      "sector_bucket": "Materials / Suppliers"
+    },
+    {
+      "symbol": "FORM",
+      "exchange": "NASDAQ",
+      "name": "FormFactor, Inc.",
+      "display": "FormFactor, Inc. (NASDAQ:FORM)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "GFS",
+      "exchange": "NASDAQ",
+      "name": "GLOBALFOUNDRIES Inc.",
+      "display": "GLOBALFOUNDRIES Inc. (NASDAQ:GFS)",
+      "sector_bucket": "Foundry (US)"
+    },
+    {
+      "symbol": "HPE",
+      "exchange": "NYSE",
+      "name": "Hewlett Packard Enterprise Company",
+      "display": "Hewlett Packard Enterprise Company (NYSE:HPE)",
+      "sector_bucket": "Servers / Systems"
+    },
+    {
+      "symbol": "IPGP",
+      "exchange": "NASDAQ",
+      "name": "IPG Photonics Corporation",
+      "display": "IPG Photonics Corporation (NASDAQ:IPGP)",
+      "sector_bucket": "Photonics / Lasers"
+    },
+    {
+      "symbol": "INTC",
+      "exchange": "NASDAQ",
+      "name": "Intel Corporation",
+      "display": "Intel Corporation (NASDAQ:INTC)",
+      "sector_bucket": "CPU / Foundry"
+    },
+    {
+      "symbol": "KLAC",
+      "exchange": "NASDAQ",
+      "name": "KLA Corporation",
+      "display": "KLA Corporation (NASDAQ:KLAC)",
+      "sector_bucket": "Metrology / Inspection"
+    },
+    {
+      "symbol": "LRCX",
+      "exchange": "NASDAQ",
+      "name": "Lam Research Corporation",
+      "display": "Lam Research Corporation (NASDAQ:LRCX)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "LSCC",
+      "exchange": "NASDAQ",
+      "name": "Lattice Semiconductor Corporation",
+      "display": "Lattice Semiconductor Corporation (NASDAQ:LSCC)",
+      "sector_bucket": "FPGA"
+    },
+    {
+      "symbol": "MTSI",
+      "exchange": "NASDAQ",
+      "name": "MACOM Technology Solutions Holdings, Inc.",
+      "display": "MACOM Technology Solutions Holdings, Inc. (NASDAQ:MTSI)",
+      "sector_bucket": "Other"
+    },
+    {
+      "symbol": "MKSI",
+      "exchange": "NASDAQ",
+      "name": "MKS Inc.",
+      "display": "MKS Inc. (NASDAQ:MKSI)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "MRVL",
+      "exchange": "NASDAQ",
+      "name": "Marvell Technology, Inc.",
+      "display": "Marvell Technology, Inc. (NASDAQ:MRVL)",
+      "sector_bucket": "Networking / ASIC"
+    },
+    {
+      "symbol": "MCHP",
+      "exchange": "NASDAQ",
+      "name": "Microchip Technology Incorporated",
+      "display": "Microchip Technology Incorporated (NASDAQ:MCHP)",
+      "sector_bucket": "MCU / Embedded"
+    },
+    {
+      "symbol": "MU",
+      "exchange": "NASDAQ",
+      "name": "Micron Technology, Inc.",
+      "display": "Micron Technology, Inc. (NASDAQ:MU)",
+      "sector_bucket": "Memory"
+    },
+    {
+      "symbol": "MPWR",
+      "exchange": "NASDAQ",
+      "name": "Monolithic Power Systems, Inc.",
+      "display": "Monolithic Power Systems, Inc. (NASDAQ:MPWR)",
+      "sector_bucket": "Power"
+    },
+    {
+      "symbol": "NVDA",
+      "exchange": "NASDAQ",
+      "name": "NVIDIA Corporation",
+      "display": "NVIDIA Corporation (NASDAQ:NVDA)",
+      "sector_bucket": "GPU / AI"
+    },
+    {
+      "symbol": "NXPI",
+      "exchange": "NASDAQ",
+      "name": "NXP Semiconductors N.V.",
+      "display": "NXP Semiconductors N.V. (NASDAQ:NXPI)",
+      "sector_bucket": "Auto / MCU"
+    },
+    {
+      "symbol": "ON",
+      "exchange": "NASDAQ",
+      "name": "ON Semiconductor Corporation",
+      "display": "ON Semiconductor Corporation (NASDAQ:ON)",
+      "sector_bucket": "Power / Auto"
+    },
+    {
+      "symbol": "ONTO",
+      "exchange": "NYSE",
+      "name": "Onto Innovation Inc.",
+      "display": "Onto Innovation Inc. (NYSE:ONTO)",
+      "sector_bucket": "Metrology / Inspection"
+    },
+    {
+      "symbol": "POWI",
+      "exchange": "NASDAQ",
+      "name": "Power Integrations, Inc.",
+      "display": "Power Integrations, Inc. (NASDAQ:POWI)",
+      "sector_bucket": "Power"
+    },
+    {
+      "symbol": "QCOM",
+      "exchange": "NASDAQ",
+      "name": "QUALCOMM Incorporated",
+      "display": "QUALCOMM Incorporated (NASDAQ:QCOM)",
+      "sector_bucket": "Mobile / Connectivity"
+    },
+    {
+      "symbol": "QRVO",
+      "exchange": "NASDAQ",
+      "name": "Qorvo, Inc.",
+      "display": "Qorvo, Inc. (NASDAQ:QRVO)",
+      "sector_bucket": "RF"
+    },
+    {
+      "symbol": "RMBS",
+      "exchange": "NASDAQ",
+      "name": "Rambus Inc.",
+      "display": "Rambus Inc. (NASDAQ:RMBS)",
+      "sector_bucket": "IP / Memory"
+    },
+    {
+      "symbol": "STM",
+      "exchange": "NYSE",
+      "name": "STMicroelectronics N.V.",
+      "display": "STMicroelectronics N.V. (NYSE:STM)",
+      "sector_bucket": "Mixed-signal / Auto"
+    },
+    {
+      "symbol": "STX",
+      "exchange": "NASDAQ",
+      "name": "Seagate Technology Holdings plc",
+      "display": "Seagate Technology Holdings plc (NASDAQ:STX)",
+      "sector_bucket": "Storage"
+    },
+    {
+      "symbol": "SLAB",
+      "exchange": "NASDAQ",
+      "name": "Silicon Laboratories Inc.",
+      "display": "Silicon Laboratories Inc. (NASDAQ:SLAB)",
+      "sector_bucket": "Mixed-signal"
+    },
+    {
+      "symbol": "SIMO",
+      "exchange": "NASDAQ",
+      "name": "Silicon Motion Technology Corporation",
+      "display": "Silicon Motion Technology Corporation (NASDAQ:SIMO)",
+      "sector_bucket": "Storage / Controllers"
+    },
+    {
+      "symbol": "SWKS",
+      "exchange": "NASDAQ",
+      "name": "Skyworks Solutions, Inc.",
+      "display": "Skyworks Solutions, Inc. (NASDAQ:SWKS)",
+      "sector_bucket": "RF"
+    },
+    {
+      "symbol": "SMCI",
+      "exchange": "NASDAQ",
+      "name": "Super Micro Computer, Inc.",
+      "display": "Super Micro Computer, Inc. (NASDAQ:SMCI)",
+      "sector_bucket": "Servers / Systems"
+    },
+    {
+      "symbol": "SNPS",
+      "exchange": "NASDAQ",
+      "name": "Synopsys, Inc.",
+      "display": "Synopsys, Inc. (NASDAQ:SNPS)",
+      "sector_bucket": "EDA"
+    },
+    {
+      "symbol": "TSM",
+      "exchange": "NYSE",
+      "name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "display": "Taiwan Semiconductor Manufacturing Company Limited (NYSE:TSM)",
+      "sector_bucket": "Foundry ADR"
+    },
+    {
+      "symbol": "TER",
+      "exchange": "NASDAQ",
+      "name": "Teradyne, Inc.",
+      "display": "Teradyne, Inc. (NASDAQ:TER)",
+      "sector_bucket": "Test / ATE"
+    },
+    {
+      "symbol": "TXN",
+      "exchange": "NASDAQ",
+      "name": "Texas Instruments Incorporated",
+      "display": "Texas Instruments Incorporated (NASDAQ:TXN)",
+      "sector_bucket": "Analog"
+    },
+    {
+      "symbol": "UCTT",
+      "exchange": "NASDAQ",
+      "name": "Ultra Clean Holdings, Inc.",
+      "display": "Ultra Clean Holdings, Inc. (NASDAQ:UCTT)",
+      "sector_bucket": "Materials / Suppliers"
+    },
+    {
+      "symbol": "UMC",
+      "exchange": "NYSE",
+      "name": "United Microelectronics Corporation",
+      "display": "United Microelectronics Corporation (NYSE:UMC)",
+      "sector_bucket": "Foundry ADR"
+    },
+    {
+      "symbol": "VECO",
+      "exchange": "NASDAQ",
+      "name": "Veeco Instruments Inc.",
+      "display": "Veeco Instruments Inc. (NASDAQ:VECO)",
+      "sector_bucket": "WFE"
+    },
+    {
+      "symbol": "VSH",
+      "exchange": "NYSE",
+      "name": "Vishay Intertechnology, Inc.",
+      "display": "Vishay Intertechnology, Inc. (NYSE:VSH)",
+      "sector_bucket": "Discrete / Power"
+    },
+    {
+      "symbol": "WDC",
+      "exchange": "NASDAQ",
+      "name": "Western Digital Corporation",
+      "display": "Western Digital Corporation (NASDAQ:WDC)",
+      "sector_bucket": "Storage"
+    },
+    {
+      "symbol": "WOLF",
+      "exchange": "NYSE",
+      "name": "Wolfspeed, Inc.",
+      "display": "Wolfspeed, Inc. (NYSE:WOLF)",
+      "sector_bucket": "SiC / Power"
+    }
+  ]
+}

@@ -1,0 +1,3883 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Semi Options Report</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#f9f9f9;
+      --border:#d9d9d9;
+      --text:#111;
+      --muted:#666;
+      --good:#1b5e20;
+      --warn:#8a5a00;
+      --bad:#7a0010;
+    }
+    body{
+      font-family: Arial, sans-serif;
+      margin: 24px;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.35;
+    }
+    a { color:#0b57d0; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+
+    h1{ margin: 0 0 6px 0; font-size: 22px; }
+    h2{ margin: 0 0 10px 0; font-size: 18px; }
+    h3{ margin: 0 0 10px 0; font-size: 16px; }
+    h4{ margin: 12px 0 8px 0; font-size: 14px; }
+
+    .muted{ color: var(--muted); font-size: 12px; }
+    .hr{ border:0; border-top:1px solid var(--border); margin: 16px 0; }
+
+    .page-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 980px){
+      .grid-2{
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .card{
+      border:1px solid var(--border);
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .card.white{
+      background:#fff;
+    }
+
+    /* Compatibility: some sections still use .box */
+    .box{
+      border:1px solid var(--border);
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+    .box.white{
+      background:#fff;
+    }
+
+    .kpi-row{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .kpi{
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size: 13px;
+      min-width: 160px;
+    }
+    .kpi b{
+      display:block;
+      margin-bottom: 2px;
+      font-size:12px;
+      color:#222;
+    }
+
+    .badge{
+      display:inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: #f3f3f3;
+      vertical-align: middle;
+    }
+    .badge-a{ background:#e9f7ee; border-color:#bfe6cc; color: var(--good); }
+    .badge-b{ background:#fff6e5; border-color:#ffd89a; color: var(--warn); }
+    .badge-c{ background:#fdeaea; border-color:#f5b8b8; color: var(--bad); }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      overflow:hidden;
+    }
+    th, td{
+      border-bottom:1px solid #eee;
+      padding: 8px 10px;
+      text-align:left;
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th{
+      background:#f3f3f3;
+      font-weight:700;
+      border-bottom:1px solid var(--border);
+    }
+    tr:last-child td{ border-bottom: none; }
+
+    ul{ margin: 8px 0 0 20px; }
+    li{ margin: 4px 0; }
+
+    .section-title{
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chart-wrap{
+      margin-top: 10px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 10px 6px 10px;
+    }
+    .chart-wrap canvas{
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block;
+    }
+
+  
+  /* AI Conviction secondary card */
+  .ai-conviction-card {
+    border: 1px solid #e2d8ff;
+    background: #faf5ff;
+  }
+  .ai-conviction-score {
+    font-size: 28px;
+    font-weight: 800;
+    color: #6b21a8;
+  }
+  .ai-conviction-card a:focus {
+    outline: 2px solid #6b21a8;
+    outline-offset: 2px;
+  }
+</style>
+</head>
+
+<body>
+
+{% macro fmt(v) -%}
+  {%- if v is none -%}
+    —
+  {%- elif v is number -%}
+    {{ "%.3f"|format(v) }}
+  {%- else -%}
+    {{ v }}
+  {%- endif -%}
+{%- endmacro %}
+
+<div class="page-top">
+  <div>
+    <h1>Semi Options Report — {{ ticker }}</h1>
+    <div class="muted"><b>Mode:</b> {{ "Stock" if analysis_mode == "stock" else "Options" }}</div>
+    <div class="muted">
+      <a href="/">⬅ Back</a>
+    </div>
+  </div>
+  <div class="muted">
+    {% if expiry %}<b>Expiry:</b> {{ expiry }}{% endif %}
+    {% if planned_days %}&nbsp; | &nbsp;<b>Planned hold:</b> {{ planned_days }}d{% endif %}
+  </div>
+</div>
+
+{# P0-1 FIX: Liquidity banner uses unified gate object - same values as diagnostics #}
+{% if analysis_mode == "options" and liquidity_gate and (liquidity_gate.status == "BLOCK" or liquidity_gate.status == "WARN") %}
+  <div class="card" style="grid-column: 1 / -1; border: 1px solid {% if liquidity_gate.status == 'BLOCK' %}#dc2626{% else %}#f59e0b{% endif %}; background: {% if liquidity_gate.status == 'BLOCK' %}#fee2e2{% else %}#fef3c7{% endif %};">
+    <h3 style="margin:0; color:{% if liquidity_gate.status == 'BLOCK' %}#991b1b{% else %}#92400e{% endif %};">
+      {% if liquidity_gate.status == "BLOCK" %}
+        ❌ Liquidity Blocked — No Trade (Institutional Gate)
+      {% else %}
+        ⚠️ Liquidity Warning
+      {% endif %}
+    </h3>
+    
+    <div class="muted" style="color:{% if liquidity_gate.status == 'BLOCK' %}#7f1d1d{% else %}#78350f{% endif %}; margin-top:6px;">
+      {{ liquidity_gate.reason }}
+    </div>
+    
+    {# P0-1 FIX: Show metrics from unified gate (matches diagnostics exactly) #}
+    <div class="muted" style="margin-top:8px; font-size:13px;">
+      <b>Metrics (from auto-expiry):</b>
+      Grade: {{ liquidity_gate.liquidity_grade }} | 
+      {% if liquidity_gate.pct_two_sided is not none %}
+        Pct Two-Sided: {{ '%.3f'|format(liquidity_gate.pct_two_sided) }} | 
+      {% endif %}
+      {% if liquidity_gate.median_spread is not none %}
+        Median Spread: {{ '%.2f%%'|format(liquidity_gate.median_spread * 100) }}
+      {% endif %}
+      {% if liquidity_gate.score is not none %}
+        | Score: {{ '%.3f'|format(liquidity_gate.score) }}
+      {% endif %}
+    </div>
+    
+    <div class="muted" style="margin-top:6px;">
+      Recommendation: widen expiry, move closer to ATM, or choose a more liquid ticker/cluster.
+    </div>
+  </div>
+{% endif %}
+
+<!-- Chart.js (ONLY ONCE) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% if error %}
+  <div class="card white">
+    <h3 style="margin:0;">Error</h3>
+    <div style="margin-top:6px;">{{ error }}</div>
+  </div>
+{% else %}
+
+  <!-- ========================= -->
+  <!-- Final Conclusion -->
+  <!-- ========================= -->
+  {% if conclusion %}
+    {# Keep verdict + confidence badge consistent: drive both from conclusion.confidence #}
+    {% if conclusion and conclusion.confidence is not none %}
+        {% set conf_raw = conclusion.confidence %}
+    {% elif confidence and confidence.raw is defined %}
+        {% set conf_raw = confidence.raw %}
+    {% else %}
+        {% set conf_raw = 0 %}
+    {% endif %}
+
+    {# Normalize to 0–1 for badge logic (backend may provide 0–100) #}
+    {% if conf_raw is number and conf_raw > 1 %}
+        {% set conf = conf_raw / 100 %}
+    {% else %}
+        {% set conf = conf_raw %}
+    {% endif %}
+
+    {% if conf >= 0.75 %}
+      {% set grade = "A" %}
+      {% set badge_cls = "badge-a" %}
+      {% set grade_label = "High confidence" %}
+    {% elif conf >= 0.55 %}
+      {% set grade = "B" %}
+      {% set badge_cls = "badge-b" %}
+      {% set grade_label = "Medium confidence" %}
+    {% else %}
+      {% set grade = "C" %}
+      {% set badge_cls = "badge-c" %}
+      {% set grade_label = "Low confidence" %}
+    {% endif %}
+
+    <div class="card white">
+      <div class="section-title">
+        <h2 style="margin:0;">Final Conclusion</h2>
+        <span class="badge {{ badge_cls }}">{{ grade }} — {{ grade_label }}</span>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi">
+          <b>Verdict</b>
+          {{ conclusion.verdict }}
+        </div>
+        <div class="kpi">
+          <b>Confidence</b>
+          {% if confidence and confidence.total is defined %}
+            {{ confidence.total }}%
+          {% else %}
+            {{ "%.0f"|format(conf * 100) }}%
+          {% endif %}
+        </div>
+
+        {% if signals_used and signals_used | length > 0 %}
+        <div class="kpi">
+          <b>Signals used</b>
+          {{ signals_used | join(", ") }}
+        </div>
+        {% elif conclusion.inputs_used %}
+        <div class="kpi">
+          <b>Signals used</b>
+          {{ conclusion.inputs_used | join(", ") }}
+        </div>
+        {% endif %}
+      </div>
+
+      <h4>What supports the decision</h4>
+      <ul>
+        {% for b in conclusion.bullets %}
+          <li>{{ b }}</li>
+        {% endfor %}
+      </ul>
+
+      {% if conclusion.cautions and conclusion.cautions|length > 0 %}
+        <h4>Risks / flags</h4>
+        <ul>
+          {% for c in conclusion.cautions %}
+            <li>{{ c }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <h4>How to raise confidence</h4>
+      <ul>
+        {% if analysis_mode == "options" and liq_ok is defined and not liq_ok %}
+          <li>Pick a different strike/expiry with tighter spreads (options liquidity is failing the institutional filter).</li>
+        {% endif %}
+        {% if conclusion.missing_modules and conclusion.missing_modules|length > 0 %}
+          <li>Some modules are missing right now: <span class="muted">{{ conclusion.missing_modules | join(", ") }}</span></li>
+        {% elif analysis_mode == "options" %}
+          <li>Try another expiry inside your horizon band to see if liquidity/term structure improve.</li>
+        {% else %}
+          <li>Improve data coverage: macro regime, industry cycle, and company quality signals most affect the score.</li>
+        {% endif %}
+        <li>If event-driven, prefer defined-risk structures when uncertain.</li>
+      </ul>
+
+      {% if conclusion.missing_modules and conclusion.missing_modules|length > 0 %}
+        <div class="muted" style="margin-top:10px;">
+          Confidence is penalized when modules are missing (so it doesn’t show fake “high confidence”).
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- ========================= -->
+  <!-- AI CONVICTION (secondary score — below Final Conclusion) -->
+  <!-- ========================= -->
+  {% if ai_conviction and ai_conviction.available %}
+  <div class="card white ai-conviction-card" aria-label="AI Conviction (secondary score)" style="margin-top:12px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+      <div>
+        <h3 style="margin:0;">AI Conviction <span class="muted">(secondary)</span></h3>
+        <div class="muted" style="margin-top:6px; font-size:13px;">
+          Narrative/thesis strength. Does not override Official Confidence.
+          <a href="#ai-analysis" style="margin-left:8px;">Read AI thesis →</a>
+        </div>
+        {% if ai_conviction.disagreement_flag %}
+        <div class="muted" style="margin-top:6px; font-size:13px;">
+          Disagreement vs Official:
+          <b>{{ ai_conviction.disagreement_flag }}</b>
+          (Δ {{ ai_conviction.disagreement_abs }})
+        </div>
+        {% endif %}
+        {% if ai_conviction.disclaimer %}
+        <div class="muted" style="margin-top:4px; font-size:11px; color:#999;">
+          {{ ai_conviction.disclaimer }}
+        </div>
+        {% endif %}
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        <div class="ai-conviction-score">
+          {{ ai_conviction.score_0_100 }}<span class="muted" style="font-size:14px;">/100</span>
+        </div>
+        <div class="muted" style="font-weight:700;">{{ ai_conviction.label }}</div>
+      </div>
+    </div>
+
+    {% if ai_conviction.drivers and ai_conviction.drivers|length > 0 %}
+    <div style="margin-top:10px;">
+      <b style="font-size:13px;">Top drivers</b>
+      <ul style="margin:4px 0 0 0; padding-left:18px; font-size:13px;">
+        {% for d in ai_conviction.drivers[:3] %}
+        <li>{{ d }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if ai_conviction.risks and ai_conviction.risks|length > 0 %}
+    <div style="margin-top:10px;">
+      <b style="font-size:13px;">Key risks</b>
+      <ul style="margin:4px 0 0 0; padding-left:18px; font-size:13px;">
+        {% for r in ai_conviction.risks[:2] %}
+        <li>{{ r }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if ai_conviction.overlay_note %}
+    <div class="muted" style="margin-top:8px; font-size:12px; font-style:italic;">
+      Overlay note: {{ ai_conviction.overlay_note }}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  <!-- END AI CONVICTION -->
+
+  {% if divergence_flag == "high" %}
+  <div style="border:2px solid #f59e0b; background:#fffbeb; border-radius:12px; padding:16px 20px; margin:16px 0;">
+    <div style="font-weight:800; font-size:14px; color:#b45309;">
+      ⚠️ AI–Model Divergence: <span style="text-transform:uppercase;">{{ divergence_flag }}</span> (Δ{{ divergence_abs }})
+    </div>
+    <div style="font-size:13px; color:#78350f; margin-top:6px;">
+      AI conviction and Official Confidence disagree by <strong>{{ divergence_abs }} points</strong>.
+      Position sizing has been reduced to <strong>{{ "%.2f"|format(divergence_size_multiplier) }}×</strong> as a risk control.
+      Confirm thesis alignment before entry.
+    </div>
+  </div>
+  {% elif divergence_flag == "moderate" %}
+  <div style="border:1px solid #fbbf24; background:#fefce8; border-radius:10px; padding:10px 14px; margin:12px 0;">
+    <div style="font-weight:700; font-size:13px; color:#92400e;">
+      ℹ️ AI–Model Divergence: MODERATE (Δ{{ divergence_abs }}) — monitor thesis alignment
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="hr"></div>
+
+  <!-- ========================= -->
+  <!-- PHASE 4: CONFIDENCE BREAKDOWN (Option A Weighted Composite) -->
+  <!-- ========================= -->
+  {# P0-3 FIX: Only show confidence analysis if available; don't show unavailable if institutional exists #}
+  {% if confidence %}
+    <div class="card white" style="margin-top: 20px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2 style="margin:0;">Confidence Analysis</h2>
+        <div style="font-size:36px; font-weight:bold; color:#1565c0;">
+          {{ confidence.total }}<span style="font-size:20px; color:#666;">/100</span>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      {% if confidence.total >= 75 %}
+        {% set bar_color = "#388e3c" %}  {# Green - High #}
+        {% set bar_label = "High" %}
+      {% elif confidence.total >= 55 %}
+        {% set bar_color = "#f57c00" %}  {# Orange - Moderate #}
+        {% set bar_label = "Moderate" %}
+      {% else %}
+        {% set bar_color = "#d32f2f" %}  {# Red - Low #}
+        {% set bar_label = "Low" %}
+      {% endif %}
+      
+      <div style="background:#e0e0e0; height:24px; border-radius:12px; overflow:hidden; margin-bottom:20px;">
+        <div style="background: {{ bar_color }}; 
+                    width:{{ confidence.total }}%; height:100%; 
+                    transition: width 0.3s ease, background 0.3s ease;
+                    display:flex; align-items:center; justify-content:flex-end; padding-right:8px;">
+          <span style="color:white; font-size:12px; font-weight:bold;">
+            {{ bar_label }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Top 3 & Bottom 3 Drivers -->
+      <div class="grid grid-2" style="margin-bottom:20px;">
+        <!-- Top 3 Contributing Factors -->
+        <div>
+          <h4 style="color:#388e3c; margin-top:0;">✅ Top Contributing Factors</h4>
+          {% set top_factors = [] %}
+          {% for factor, contrib in confidence.contrib.items() %}
+            {% set _ = top_factors.append((factor, contrib, confidence.breakdown[factor])) %}
+          {% endfor %}
+          {% set top_factors = top_factors | sort(attribute='1', reverse=True) %}
+          
+          <div style="font-size:13px;">
+            {% for factor, contrib, score in top_factors[:3] %}
+              <div style="padding:6px 0; border-bottom:1px solid #eee;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="font-weight:600;">{{ factor | replace('_', ' ') | title }}</span>
+                  <span style="color:#1565c0;">+{{ "%.1f"|format(contrib * 100) }} pts</span>
+                </div>
+                <div style="color:#666; font-size:11px; margin-top:2px;">
+                  Score: {{ "%.2f"|format(score) }} × Weight: {{ "%.1f"|format(confidence.weights[factor] * 100) }}%
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Bottom 3 Limiting Factors -->
+        <div>
+          <h4 style="color:#d32f2f; margin-top:0;">⚠️ Limiting Factors</h4>
+          {% set bottom_factors = top_factors | sort(attribute='1') %}
+          
+          <div style="font-size:13px;">
+            {% for factor, contrib, score in bottom_factors[:3] %}
+              <div style="padding:6px 0; border-bottom:1px solid #eee;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="font-weight:600;">{{ factor | replace('_', ' ') | title }}</span>
+                  <span style="color:#666;">+{{ "%.1f"|format(contrib * 100) }} pts</span>
+                </div>
+                <div style="color:#666; font-size:11px; margin-top:2px;">
+                  Score: {{ "%.2f"|format(score) }} × Weight: {{ "%.1f"|format(confidence.weights[factor] * 100) }}%
+                  {% if score == 0.5 %}<span style="color:#f57c00;"> (neutral/missing)</span>{% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Missing Data Alerts — driven by factor_meta (ok/defaulted/excluded) -->
+      {% if factor_meta %}
+        {% set gap_factors = [] %}
+        {% for fk, fm in factor_meta.items() %}
+          {% if fm.status == "defaulted" and fm.weight > 0 %}
+            {% set _ = gap_factors.append((fm.pretty, fm.reason)) %}
+          {% endif %}
+        {% endfor %}
+        {% if gap_factors | length > 0 %}
+          <div style="background:#fff3e0; border-left:4px solid #f57c00; padding:10px 12px; border-radius:6px; margin-bottom:20px;">
+            <div style="font-weight:600; color:#e65100; margin-bottom:6px;">⚠️ Data Gaps Detected</div>
+            <ul style="margin:4px 0 0 20px; font-size:13px; color:#666;">
+              {% for pretty, reason in gap_factors %}
+                <li><strong>{{ pretty }}</strong>: defaulted to neutral — {{ reason or "data unavailable" }}</li>
+              {% endfor %}
+            </ul>
+            <div style="margin-top:8px; font-size:12px; color:#666;">
+              💡 Improving data availability will increase confidence accuracy
+            </div>
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <!-- Full Breakdown Table (Expandable) -->
+      <details style="margin-top:16px;">
+        <summary style="cursor:pointer; font-weight:600; color:#1565c0; padding:8px 0;">
+          📊 View Full Factor Breakdown
+        </summary>
+        
+        <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:13px;">
+          <thead>
+            <tr style="background:#f5f5f5; border-bottom:2px solid #ddd;">
+              <th style="text-align:left; padding:8px;">Factor</th>
+              <th style="text-align:center; padding:8px;">Score</th>
+              <th style="text-align:center; padding:8px;">Weight</th>
+              <th style="text-align:center; padding:8px;">Contribution</th>
+              <th style="text-align:left; padding:8px;">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set _display_factors = ['dcf', 'company', 'macro', 'industry', 'vol', 'earnings', 'alpha', 'liquidity'] %}
+            {% if confidence.weights.qual is defined and confidence.weights.qual > 0 %}
+              {% set _display_factors = _display_factors + ['qual'] %}
+            {% endif %}
+            {% for factor in _display_factors %}
+              {% set _w = confidence.weights[factor] if confidence.weights[factor] is defined else 0 %}
+              {% set _s = confidence.breakdown[factor] if confidence.breakdown[factor] is defined else 0.5 %}
+              {% set _c = confidence.contrib[factor] if confidence.contrib[factor] is defined else 0 %}
+              {% set _fm = factor_meta[factor] if factor_meta and factor_meta[factor] is defined else {} %}
+              {% set _status = _fm.status if _fm.status is defined else ("excluded" if _w == 0 else "ok") %}
+              {% if _status != "excluded" or factor == "liquidity" %}
+                <tr style="border-bottom:1px solid #eee; {% if _status == 'excluded' %}opacity:0.5;{% elif _status == 'defaulted' %}background:#fffde7;{% endif %}">
+                  <td style="padding:8px; font-weight:500;">
+                    {{ _fm.pretty if _fm.pretty is defined else (factor | replace('_', ' ') | title) }}
+                  </td>
+                  <td style="padding:8px; text-align:center;">
+                    {{ "%.2f"|format(_s) }}
+                    {% if _status == "defaulted" %}<span style="color:#f57c00; font-size:10px;"> (default)</span>{% endif %}
+                  </td>
+                  <td style="padding:8px; text-align:center;">
+                    {{ "%.1f"|format(_w * 100) }}%
+                  </td>
+                  <td style="padding:8px; text-align:center; color:#1565c0; font-weight:600;">
+                    +{{ "%.1f"|format(_c * 100) }}
+                  </td>
+                  <td style="padding:8px; font-size:12px;">
+                    {% if _status == "excluded" %}
+                      <span style="color:#999;">— excluded ({{ _fm.reason if _fm.reason is defined else "not scored" }})</span>
+                    {% elif _status == "defaulted" %}
+                      <span style="color:#f57c00;">⚠️ Defaulted — {{ _fm.reason if _fm.reason is defined else "data unavailable" }}</span>
+                    {% elif _s >= 0.65 %}
+                      <span style="color:#388e3c;">✅ Strong</span>
+                    {% elif _s >= 0.45 and _s <= 0.55 %}
+                      <span style="color:#1565c0;">✓ Neutral</span>
+                    {% elif _s < 0.45 %}
+                      <span style="color:#d32f2f;">❌ Weak</span>
+                    {% else %}
+                      <span style="color:#666;">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr style="border-top:2px solid #ddd; background:#fafafa; font-weight:700;">
+              <td style="padding:10px;">TOTAL CONFIDENCE</td>
+              <td style="padding:10px; text-align:center;">{{ "%.3f"|format(confidence.raw) }}</td>
+              <td style="padding:10px; text-align:center;">100%</td>
+              <td style="padding:10px; text-align:center; color:#1565c0; font-size:16px;">
+                {{ confidence.total }}
+              </td>
+              <td style="padding:10px;"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </details>
+
+      <!-- Debug Info (Optional - for development) -->
+      {% if confidence.debug %}
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer; font-size:12px; color:#999; padding:4px 0;">
+            🔍 Debug Info (inputs snapshot)
+          </summary>
+          <pre style="background:#f5f5f5; padding:10px; border-radius:6px; font-size:11px; overflow-x:auto; margin-top:8px;">{{ confidence.debug | tojson(indent=2) }}</pre>
+        </details>
+      {% endif %}
+
+    </div>
+  {% elif not confidence %}
+    <!-- P0-3 FIX: Only show unavailable if BOTH confidence systems are None -->
+    <div class="card" style="margin-top: 20px; background:#fff3e0; border-left:4px solid #f57c00;">
+      <div style="font-weight:600; color:#e65100;">⚠️ Confidence Analysis Unavailable</div>
+      <div style="margin-top:6px; font-size:13px; color:#666;">
+        The confidence engine did not return data. This may indicate a backend issue.
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ========================= -->
+  <!-- Two-column info blocks -->
+  <!-- ========================= -->
+  <div class="grid grid-2">
+
+    <!-- Market -->
+    <div class="card">
+      <h3 style="margin-top:0;">Market</h3>
+      <div><b>Spot:</b> {{ "%.2f"|format(spot) }}</div>
+      <div><b>HV20:</b> {% if hv20 is not none %}{{ "%.2f"|format(hv20) }}{% else %}—{% endif %}</div>
+      <div><b>HV60:</b> {% if hv60 is not none %}{{ "%.2f"|format(hv60) }}{% else %}—{% endif %}</div>
+      <div><b>Forecast sigma:</b> {% if sigma_forecast is not none %}{{ "%.2f"|format(sigma_forecast) }}{% else %}—{% endif %}</div>
+    </div>
+
+    <!-- Events -->
+    <div class="card">
+      <h3 style="margin-top:0;">Events</h3>
+
+      {# P0-4 FIX: Only show earnings if it's a future event (not past) #}
+      {% if earnings_info and (earnings_info.earnings_date_us or earnings_info.earnings_date_utc) and earnings_info.get('display_as_future', True) %}
+        <div>
+          <b>Earnings (est):</b>
+          {% if earnings_info.earnings_date_us %}
+            {{ earnings_info.earnings_date_us }}
+            {% if earnings_info.earnings_time_us %} {{ earnings_info.earnings_time_us }}{% endif %}
+            {% if earnings_info.session_us %} <span class="muted">({{ earnings_info.session_us }})</span>{% endif %}
+            <span class="muted"> ET</span>
+            {% if earnings_info.days_to_event is not none and earnings_info.days_to_event >= 0 %}
+              <span class="muted"> • +{{ earnings_info.days_to_event }} days</span>
+            {% elif earnings_info.days_to_earnings_us is not none and earnings_info.days_to_earnings_us >= 0 %}
+              <span class="muted"> • {{ earnings_info.days_to_earnings_us }} days</span>
+            {% endif %}
+          {% else %}
+            {{ earnings_info.earnings_date_utc }}
+            {% if earnings_info.days_to_event is not none and earnings_info.days_to_event >= 0 %}
+              <span class="muted"> • +{{ earnings_info.days_to_event }} days</span>
+            {% elif earnings_info.days_to_earnings is not none and earnings_info.days_to_earnings >= 0 %}
+              <span class="muted"> • {{ earnings_info.days_to_earnings }} days</span>
+            {% endif %}
+            <span class="muted"> UTC</span>
+          {% endif %}
+        </div>
+
+        {% if earnings_info.source %}
+          <div class="muted" style="margin-top:6px;">Source: {{ earnings_info.source }}</div>
+        {% endif %}
+        
+        {% if earnings_info.reliability is not none %}
+          <div class="muted" style="margin-top:6px;">
+            Reliability: {{ earnings_info.reliability_label }} ({{ earnings_info.reliability }})
+          </div>
+        {% endif %}
+
+        {% if earnings_move_stats %}
+          <div class="muted" style="margin-top:6px;">
+            Past earnings abs move (n={{ earnings_move_stats.n }}):
+            median {{ earnings_move_stats.median_abs_pct }}%,
+            avg {{ earnings_move_stats.avg_abs_pct }}%
+          </div>
+        {% endif %}
+
+
+      {% else %}
+        <div><b>Earnings:</b> —</div>
+      {% endif %}
+
+      <div class="muted" style="margin-top:8px;">
+        Best-effort from Yahoo; verify before trading.
+      </div>
+    </div>
+
+    <div class="box" style="grid-column: 1 / -1;">
+    <h2>Company & Headlines</h2>
+
+    {% if company %}
+        <div><b>{{ company.name or ticker }}</b></div>
+        <div class="muted">
+        {{ company.sector or "-" }} / {{ company.industry or "-" }}
+        {% if company.country %} • {{ company.country }}{% endif %}
+        </div>
+        {% if company.website %}
+        <div class="muted" style="margin-top:6px;">Website: {{ company.website }}</div>
+        {% endif %}
+
+        {% if company.brief %}
+        <div style="margin-top:10px;">{{ company.brief }}</div>
+        {% endif %}
+
+        {% if company.key_points and company.key_points|length > 0 %}
+        <div style="margin-top:10px;">
+            <b>Key points:</b>
+            <ul>
+            {% for p in company.key_points %}
+                <li>{{ p }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+              {% if company.company_chain %}
+        <div style="margin-top:14px;">
+          <b>Business chain (deterministic):</b>
+
+          {% set cc = company.company_chain %}
+
+          {% if cc.business_model and cc.business_model|length > 0 %}
+            <div style="margin-top:8px;">
+              <b>Business model</b>
+              <ul>
+                {% for x in cc.business_model %}
+                  <li>{{ x }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if cc.suppliers and cc.suppliers|length > 0 %}
+            <div style="margin-top:8px;">
+              <b>Main suppliers / dependencies</b>
+              <ul>
+                {% for s in cc.suppliers %}
+                  <li>{{ s.name }} — <span class="muted">{{ s.role }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if cc.customers and cc.customers|length > 0 %}
+            <div style="margin-top:8px;">
+              <b>Main customers</b>
+              <ul>
+                {% for c in cc.customers %}
+                  <li>{{ c.group }} — <span class="muted">{{ (c.examples or []) | join(", ") }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if cc.products_to_customers and cc.products_to_customers|length > 0 %}
+            <div style="margin-top:8px;">
+              <b>Products → customers</b>
+              <ul>
+                {% for p in cc.products_to_customers %}
+                  <li>{{ p.product }} → <span class="muted">{{ p.customers }}</span></li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+            {% if cc.value_chain and cc.value_chain|length > 0 %}
+            <div style="margin-top:8px;">
+                <b>Value chain</b>
+                <ul>
+                {% for v in cc.value_chain %}
+                    {% if "→" in v %}
+                    {% set parts = v.split("→", 1) %}
+                    <li>
+                        {{ parts[0].strip() }} →
+                        <span class="muted">{{ parts[1].strip() }}</span>
+                    </li>
+                    {% else %}
+                    <li>{{ v }}</li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+          {% if cc.risk_layer and cc.risk_layer|length > 0 %}
+            <div style="margin-top:8px;">
+              <b>Risk layer</b>
+              <ul>
+                {% for r in cc.risk_layer %}
+                  <li>{{ r }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if cc.source_note %}
+            <div class="muted" style="margin-top:8px;">{{ cc.source_note }}</div>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% set cb = (company.company_brief if company.company_brief is defined else company.company_chain) %}
+    {% if cb %}
+    <div class="box" style="margin-top:14px;">
+        <h2>Company ecosystem (quant-first template)</h2>
+
+        {% if cb.name %}<div><b>Name:</b> {{ cb.name }}</div>{% endif %}
+        {% if cb.sector_bucket %}<div><b>Bucket:</b> {{ cb.sector_bucket }}</div>{% endif %}
+
+        {% if cb.narrative and cb.narrative.one_liner %}
+        <p style="margin-top:10px;">{{ cb.narrative.one_liner }}</p>
+        {% endif %}
+
+        {% if cb.narrative and cb.narrative.bull_case %}
+        <div style="margin-top:10px;"><b>Bull case:</b>
+            {% if cb.narrative.bull_case is string %}
+            <ul><li>{{ cb.narrative.bull_case }}</li></ul>
+            {% else %}
+            <ul>
+            {% for x in cb.narrative.bull_case %}<li>{{ x }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if cb.narrative and cb.narrative.bear_case %}
+        <div style="margin-top:10px;"><b>Bear case:</b>
+            {% if cb.narrative.bear_case is string %}
+            <ul><li>{{ cb.narrative.bear_case }}</li></ul>
+            {% else %}
+            <ul>
+            {% for x in cb.narrative.bear_case %}<li>{{ x }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if cb.narrative and cb.narrative.watch_items %}
+        <div style="margin-top:10px;"><b>What to watch:</b>
+            <ul>
+            {% for x in cb.narrative.watch_items %}<li>{{ x }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="muted" style="margin-top:10px;">
+        This section is deterministic and is meant to feed the future AI summary (do not treat as a live/news section).
+        </div>
+    </div>
+
+    <!-- EARNINGS TRACK RECORD SECTION -->
+
+    <section class="card earnings-track-record" style="grid-column: 1 / -1;">
+        <div class="flex-between">
+            
+<!-- ========================= -->
+<!-- Gemini AI Analysis (Citadel Perspective) -->
+<!-- ========================= -->
+{% if ai and ai.get('available') %}
+<div id="ai-analysis" class="card" style="border:2px solid #e2d8ff; border-radius:18px; padding:20px; margin: 20px 0;">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+    <div>
+      <h2 style="margin:0 0 6px 0;">Gemini AI Analysis — Citadel Perspective</h2>
+      <div style="color:#666; font-size:13px;">AI-powered long-form thesis + Q&amp;A</div>
+    </div>
+    <div style="background:#6b21a8; color:white; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:600;">
+      AI POWERED
+    </div>
+  </div>
+
+  {% if ai.get('time_horizon') %}
+    <div style="margin-top:10px; color:#444; font-size:14px;">
+      <span style="opacity:0.8;">Time horizon:</span> <b>{{ ai.get('time_horizon') }}</b>
+    </div>
+  {% endif %}
+
+  <div style="background:#f4f0ff; border:1px solid #e2d8ff; border-radius:14px; padding:16px; margin-top:14px;">
+    <div style="font-weight:800; font-size:18px; margin-bottom:8px;">💰 AI Price Guidance</div>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+      <div>
+        <div style="color:#666; font-size:13px;">Normal Entry Range</div>
+        <div style="font-size:22px; font-weight:800; color:#1d4ed8;">
+          {% if ai_entry %}${{ '%.2f'|format(ai_entry.get('low')) }} – ${{ '%.2f'|format(ai_entry.get('high')) }}{% else %}—{% endif %}
+        </div>
+        <div style="color:#666; font-size:13px;">
+          avg {% if ai_entry and ai_entry.get('avg') is not none %}${{ '%.2f'|format(ai_entry.get('avg')) }}{% else %}—{% endif %}
+        </div>
+      </div>
+
+      <div>
+        <div style="color:#666; font-size:13px;">Conservative Entry Range</div>
+        <div style="font-size:22px; font-weight:800; color:#16a34a;">
+          {% if ai_cons_entry %}${{ '%.2f'|format(ai_cons_entry.get('low')) }} – ${{ '%.2f'|format(ai_cons_entry.get('high')) }}{% else %}—{% endif %}
+        </div>
+        <div style="color:#666; font-size:13px;">
+          avg {% if ai_cons_entry and ai_cons_entry.get('avg') is not none %}${{ '%.2f'|format(ai_cons_entry.get('avg')) }}{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# P1-2 FIX: Explicit Base/Bull/Bear target labeling #}
+    <div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2d8ff;">
+      <div style="font-weight:700; font-size:14px; margin-bottom:8px;">Target Prices</div>
+      
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; font-size:13px;">
+        {# AI Targets (if available) #}
+        {% if ai and (ai.get('target_price_base') or ai.get('target_price_bull') or ai.get('target_price_bear')) %}
+          <div>
+            <div style="color:#666; font-size:11px;">AI Target (Base)</div>
+            <div style="font-size:18px; font-weight:700; color:#1d4ed8;">
+              {% if ai.get('target_price_base') is not none %}${{ '%.2f'|format(ai.get('target_price_base')) }}{% else %}—{% endif %}
+            </div>
+          </div>
+          <div>
+            <div style="color:#666; font-size:11px;">AI Target (Bull)</div>
+            <div style="font-size:18px; font-weight:700; color:#16a34a;">
+              {% if ai.get('target_price_bull') is not none %}${{ '%.2f'|format(ai.get('target_price_bull')) }}{% else %}—{% endif %}
+            </div>
+          </div>
+          <div>
+            <div style="color:#666; font-size:11px;">AI Target (Bear)</div>
+            <div style="font-size:18px; font-weight:700; color:#dc2626;">
+              {% if ai.get('target_price_bear') is not none %}${{ '%.2f'|format(ai.get('target_price_bear')) }}{% else %}—{% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+      
+      {# Model Target (Deterministic, if available) #}
+      {% if model_target_price is defined and model_target_price is not none %}
+        <div style="margin-top:8px; padding:8px; background:#f9fafb; border-radius:6px;">
+          <div style="font-size:12px; color:#666;">Model Target (Deterministic, Peer Re-rating):</div>
+          <div style="font-size:16px; font-weight:700; color:#6366f1;">
+            ${{ '%.2f'|format(model_target_price) }}
+          </div>
+        </div>
+      {% endif %}
+      
+      {# Dashboard Usage Note #}
+      {% if ai and ai.get('target_price_base') is not none %}
+        <div style="margin-top:8px; padding:6px 8px; background:#fef3c7; border-radius:4px; font-size:11px; color:#92400e;">
+          📊 Trade Dashboard uses: <b>AI Base Case (${{ '%.2f'|format(ai.get('target_price_base')) }})</b>
+        </div>
+      {% endif %}
+    </div>
+
+    <div style="display:flex; gap:18px; flex-wrap:wrap; margin-top:12px; color:#222;">
+      <div><span style="color:#666;">Overall Avg Entry:</span> <b>{% if ai_overall_avg is not none %}${{ '%.2f'|format(ai_overall_avg) }}{% else %}—{% endif %}</b></div>
+      {# UNIFIED CONFIDENCE: always use canonical confidence.total #}
+      <div><span style="color:#666;">Confidence:</span> <b>
+        {% if confidence and confidence.total is not none %}
+          {{ confidence.total }}%
+        {% elif ai and ai.get('confidence') is not none %}
+          {{ '%d'|format(ai.get('confidence')) }}%
+        {% else %}—{% endif %}
+      </b></div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;">
+    <h3 style="margin:0 0 8px 0;">Full AI report</h3>
+    <div style="white-space:pre-wrap; background:#fff; border:1px solid #eee; border-radius:14px; padding:14px; max-height:520px; overflow:auto;">
+      {{ ai.get('ai_report') or '' }}
+    </div>
+  </div>
+
+
+
+<!-- ============================================================ -->
+<!-- OVERLAY DISPLAY (If Present) -->
+<!-- ============================================================ -->
+{% if confidence and confidence.overlay and confidence.overlay.present %}
+  <div class="card white" style="margin: 16px 0; border:1px dashed #c7d2fe;">
+    <h3 style="margin:0 0 8px 0;">Overlay applied</h3>
+    <div style="color:#666; font-size:13px;">User-provided high-credibility info. Confidence nudged ±5 max; risk controls adjust more.</div>
+    <div style="margin-top:10px; font-size:14px;">
+      <div><b>Δ Confidence:</b> {{ confidence.overlay_delta or 0 }}</div>
+      <div><b>Bull:</b> {{ confidence.overlay.bull or '—' }}</div>
+      <div><b>Bear:</b> {{ confidence.overlay.bear or '—' }}</div>
+      <div><b>Strength:</b> {{ confidence.overlay.strength }}</div>
+      <div><b>Horizon:</b> {{ confidence.overlay.horizon }}</div>
+    </div>
+  </div>
+{% endif %}
+
+
+<!-- ============================================================ -->
+<!-- ASK THE ANALYST (AI CHAT) -->
+<!-- ============================================================ -->
+<div class="card white" style="margin: 24px 0;">
+  <h3 style="margin:0 0 10px 0;">Ask the analyst</h3>
+    <div style="color:#666; font-size:13px; margin-bottom:10px;">
+      Ask follow-up questions about this ticker’s thesis, risks, entry plan, or what would change the view.
+    </div>
+    <div id="ai-chat-box" style="background:#0b1020; color:#e5e7eb; border-radius:14px; padding:14px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px;">
+      <div style="opacity:0.85; margin-bottom:8px;">AI ready. Ask a question below.</div>
+      <div id="ai-chat-thread"></div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:10px;">
+      <input id="ai-question" type="text" placeholder="e.g., What would invalidate the bull thesis?" style="flex:1; padding:12px 14px; border-radius:12px; border:1px solid #ddd;">
+      <button id="ai-ask" class="btn" style="min-width:90px;">Ask</button>
+    </div>
+    <div style="color:#666; font-size:12px; margin-top:8px;">
+      Note: Responses are generated by Gemini based on this report context + its analysis role.
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('ai-ask');
+      const input = document.getElementById('ai-question');
+      const thread = document.getElementById('ai-chat-thread');
+      const ticker = "{{ ticker }}";
+      function add(role, text){
+        const el = document.createElement('div');
+        el.style.margin = "10px 0";
+        el.innerHTML = `<div style="font-weight:700; margin-bottom:2px;">${role}</div><div style="white-space:pre-wrap;">${text}</div>`;
+        thread.appendChild(el);
+        thread.scrollTop = thread.scrollHeight;
+      }
+      async function ask(){
+        const q = (input.value || '').trim();
+        if(!q) return;
+        add('You', q);
+        input.value = '';
+        try{
+          const resp = await fetch('/api/ai/chat', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ticker: ticker, question: q})
+          });
+
+          // If backend returns HTML / non-JSON on error, don't crash the UI.
+          let data = null;
+          const ct = (resp.headers && resp.headers.get) ? (resp.headers.get('content-type') || '') : '';
+          if (ct.includes('application/json')) {
+            data = await resp.json();
+          } else {
+            const txt = await resp.text();
+            data = { error: `AI endpoint error (${resp.status}): ${txt.slice(0, 400)}` };
+          }
+
+          if (!resp.ok && data && !data.error) {
+            data.error = `AI endpoint error (${resp.status})`;
+          }
+
+          if(data && data.answer){
+            add('AI', data.answer);
+          }else if(data && data.error){
+            add('AI', data.error);
+          }else{
+            add('AI', 'No response.');
+          }
+        }catch(e){
+          add('AI', 'Error: ' + e);
+        }
+      }
+      if(btn) btn.addEventListener('click', ask);
+      if(input) input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); ask(); } });
+    })();
+  </script>
+
+</div>
+
+
+        {% if execution_plan %}
+            <div style="margin-top:20px; background:#f7f9fc; padding:16px; border-radius:12px; border:1px solid #e3e7ef;">
+                <h3 style="margin-top:0;">🔷 Institutional Execution Plan (Deterministic)</h3>
+                
+                {# LIQUIDITY WARNING BANNER #}
+                {% if liquidity_blocked %}
+                <div style="background:#fef2f2; border:2px solid #dc2626; color:#991b1b; padding:12px; border-radius:8px; margin-bottom:16px;">
+                    <div style="font-weight:700; font-size:15px;">⚠️ LIQUIDITY WARNING</div>
+                    <div style="margin-top:4px; font-size:13px;">{{ liquidity_block_reason }}</div>
+                    <div style="margin-top:8px; font-size:12px; opacity:0.8;">Recommendations shown for educational purposes. Exercise caution with actual execution.</div>
+                </div>
+                {% endif %}
+
+                {% if execution_plan.trade_allowed and execution_plan.selected %}
+                <div style="margin-bottom:12px;">
+                    <div><b>Selected:</b> #{{ execution_plan.selected.rank }} — {{ execution_plan.selected.structure }}</div>
+                    <div><b>Expiry:</b> {{ execution_plan.selected.expiry }}</div>
+                    <div><b>Strike:</b> {{ execution_plan.selected.strike }}</div>
+                    <div><b>Premium:</b> ${{ '%.4f'|format(execution_plan.selected.premium) }}</div>
+                    <div><b>Contracts:</b> {{ execution_plan.selected.contracts }}</div>
+                    <div><b>Total Cost:</b> ${{ '%.2f'|format(execution_plan.selected.total_cost) }}</div>
+                    <div><b>Max Loss:</b> ${{ '%.2f'|format(execution_plan.selected.max_loss) }}
+                     {% if execution_plan.selected.max_loss_pct_budget is not none %}
+                      ({{ '%.1f'|format(execution_plan.selected.max_loss_pct_budget) }}% of budget)
+                     {% endif %}
+                    </div>
+                    <div><b>Breakeven:</b> ${{ '%.2f'|format(execution_plan.selected.breakeven) }}</div>
+                    <div><b>Delta Exposure:</b> {{ '%.1f'|format(execution_plan.selected.delta_exposure) }}</div>
+                </div>
+                {% else %}
+                    <p style="color:#cc0000;"><b>Trade Blocked:</b> {{ execution_plan.reason }}</p>
+                {% endif %}
+
+                {% if execution_plan.candidates %}
+                <div style="margin-top:14px;">
+                    <h4 style="margin:0 0 8px 0;">Candidates (Ranked + Sized)</h4>
+                    <table class="tbl">
+                     <thead>
+                      <tr>
+                       <th>Rank</th><th>Type</th><th>Expiry</th><th>Strike</th><th>Premium</th>
+                       <th>Contracts</th><th>Total Cost</th><th>Max Loss</th><th>Breakeven</th><th>Δ Exposure</th>
+                      </tr>
+                     </thead>
+                    <tbody>
+                        {% for r in execution_plan.candidates %}
+                        <tr>
+                            <td>{{ r.rank }}</td>
+                            <td>{{ r.type|title }}</td>
+                            <td>{{ r.expiry }}</td>
+                            <td>{{ '%.2f'|format(r.strike) }}</td>
+                            <td>${{ '%.4f'|format(r.premium) }}</td>
+                            <td>{{ r.contracts }}</td>
+                            <td>${{ '%.2f'|format(r.total_cost) }}</td>
+                            <td>${{ '%.2f'|format(r.max_loss) }}</td>
+                            <td>${{ '%.2f'|format(r.breakeven) }}</td>
+                            <td>{{ '%.1f'|format(r.delta_exposure) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- TRADE DASHBOARD -->
+        <!-- ============================================================ -->
+        <!-- TRADE DASHBOARD (BEST OF BOTH - MERGED VERSION) -->
+        <!-- ============================================================ -->
+        {% if dashboard_data and analysis_mode == 'options' %}
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin: 32px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <h2 style="margin: 0 0 20px 0; color: white;">📊 Trade Dashboard</h2>
+          
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+        
+        <!-- Position Overview -->
+        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 16px; border-radius: 8px;">
+            <h3 style="margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; opacity: 0.8; color: white;">Position Overview</h3>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span>Spot:</span>
+                <strong>${{ dashboard_data.spot }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Target (Capped):</span>
+                <strong>${{ '%.1f'|format(target_price_final or dashboard_data.target) }}</strong>
+            </div>
+            {% if target_caps and target_caps.applied %}
+            <div style="font-size:11px; opacity:0.85; color:#fbbf24; margin-top:2px;">
+              ⚠️ Guardrail: {{ target_caps.reason }}
+            </div>
+            {% endif %}
+            <div style="display: flex; justify-content: space-between;">
+                <span>Upside to Target:</span>
+                <strong style="color: #4ade80;">+{{ dashboard_data.upside_to_target_pct }}%</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Entry (Normal):</span>
+                <strong>${{ dashboard_data.entry_normal_avg }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Entry (Conservative):</span>
+                <strong>${{ dashboard_data.entry_conservative_avg }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span>Downside to Entry:</span>
+                <strong style="color: #fbbf24;">{{ dashboard_data.downside_to_cons_pct }}%</strong>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); margin-top: 8px; padding-top: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                <span>Current R/R:</span>
+                <strong>{{ dashboard_data.current_rr }}x</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                <span>R/R at Entry:</span>
+                <strong style="color: #4ade80;">{{ dashboard_data.entry_rr }}x {% if dashboard_data.rr_favorable %}⭐{% endif %}</strong>
+                </div>
+            </div>
+            </div>
+        </div>
+            
+            <!-- Volatility Context -->
+            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 16px; border-radius: 8px;">
+              <h3 style="margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; opacity: 0.8; color: white;">Volatility Context</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>IV Rank:</span>
+                  <strong>{{ dashboard_data.iv_rank }}%</strong>
+                </div>
+                <div style="font-size: 12px; opacity: 0.8;">{{ dashboard_data.iv_rank_label }}</div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                  <span>Implied Move (30D):</span>
+                  <strong>±{{ dashboard_data.implied_move_30d }}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>HV20 Expected:</span>
+                  <strong>±{{ dashboard_data.hv20_expected }}%</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                  <span>IV/HV Ratio:</span>
+                  <strong>{{ dashboard_data.iv_hv_ratio }}x</strong>
+                </div>
+                <div style="font-size: 12px; opacity: 0.9; margin-top: 4px;">{{ dashboard_data.iv_signal }}</div>
+              </div>
+            </div>
+            
+            <!-- Liquidity & Quality -->
+            <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 16px; border-radius: 8px;">
+              <h3 style="margin: 0 0 12px 0; font-size: 14px; text-transform: uppercase; opacity: 0.8; color: white;">Liquidity & Quality</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Liquidity Grade:</span>
+                  <strong style="font-size: 24px;">{{ dashboard_data.liquidity_grade }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                  <span>Expiry Quality:</span>
+                  <strong>{{ dashboard_data.expiry_quality_score }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 8px;">
+                  <span>Spread:</span>
+                  <strong>{{ dashboard_data.spread_pct }}%</strong>
+                </div>
+                <div style="font-size: 12px; opacity: 0.8;">{{ dashboard_data.spread_label }}</div>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+
+        <!-- ============================================================ -->
+        <!-- STRATEGY RECOMMENDATION -->
+        <!-- ============================================================ -->
+        {% if strategy_recommendation and analysis_mode == 'options' %}
+        <div class="card white" style="margin: 24px 0; padding: 24px; border: 2px solid #8b5cf6;">
+        <h2 style="margin: 0 0 16px 0; color: #6b21a8;">🎲 Optimal Strategy Structure</h2>
+        
+        <div style="background: #f5f3ff; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 8px 0; color: #6b21a8;">{{ strategy_recommendation.structure|replace('_', ' ')|title }}</h3>
+            <p style="margin: 0; color: #6b7280;">{{ strategy_recommendation.description }}</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+            <div>
+            <h4 style="margin: 0 0 8px 0;">Strikes</h4>
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; font-size: 14px;">
+                <div><strong>Long:</strong> ${{ strategy_recommendation.strikes.long }}</div>
+                {% if strategy_recommendation.strikes.short %}
+                <div><strong>Short:</strong> ${{ strategy_recommendation.strikes.short }}</div>
+                {% endif %}
+            </div>
+            </div>
+            
+            <div>
+            <h4 style="margin: 0 0 8px 0;">Execution</h4>
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px; font-size: 14px;">
+                <div><strong>Cost:</strong> ${{ strategy_recommendation.execution.entry_cost }}</div>
+                <div><strong>Max Risk:</strong> ${{ strategy_recommendation.execution.max_risk }}</div>
+                <div><strong>Max Reward:</strong> ${{ strategy_recommendation.execution.max_reward }}</div>
+                <div><strong>R/R:</strong> {{ strategy_recommendation.execution.rr_ratio }}</div>
+            </div>
+            </div>
+        </div>
+        
+        <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 12px; margin-bottom: 12px;">
+            <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">Reasoning:</div>
+            <div style="font-size: 13px; color: #1e3a8a;">{{ strategy_recommendation.reasoning }}</div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 13px;">
+            <div>
+            <div style="font-weight: 600; color: #10b981; margin-bottom: 4px;">✅ Pros:</div>
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for pro in strategy_recommendation.pros %}
+                <li>{{ pro }}</li>
+                {% endfor %}
+            </ul>
+            </div>
+            <div>
+            <div style="font-weight: 600; color: #ef4444; margin-bottom: 4px;">⚠️ Cons:</div>
+            <ul style="margin: 0; padding-left: 20px;">
+                {% for con in strategy_recommendation.cons %}
+                <li>{{ con }}</li>
+                {% endfor %}
+            </ul>
+            </div>
+        </div>
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- REVERSE DCF (MARKET EXPECTATIONS) -->
+        <!-- ============================================================ -->
+        {% if reverse_dcf_analysis %}
+        <div class="card white" style="margin: 24px 0; padding: 24px; border: 2px solid #f59e0b;">
+        <h2 style="margin: 0 0 16px 0; color: #92400e;">💵 Reverse DCF: What Market is Pricing</h2>
+        
+        <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="font-size: 14px; color: #78350f; margin-bottom: 8px;">
+            <strong>Current Price:</strong> ${{ reverse_dcf_analysis.current_price }} 
+            <span style="font-size: 12px; color: #92400e;">({{ reverse_dcf_analysis.price_premium_pct }}% premium vs DCF ${{ reverse_dcf_analysis.dcf_intrinsic }})</span>
+            </div>
+            <div style="font-size: 13px; color: #78350f;">{{ reverse_dcf_analysis.assessment }}</div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+            <!-- Revenue CAGR -->
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">IMPLIED REVENUE CAGR</div>
+            <div style="font-size: 24px; font-weight: 700; color: #111827;">{{ reverse_dcf_analysis.implied_revenue_cagr }}%</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                DCF: {{ reverse_dcf_analysis.dcf_revenue_cagr }}% 
+                <span style="color: {% if reverse_dcf_analysis.revenue_gap_pct > 20 %}#ef4444{% elif reverse_dcf_analysis.revenue_gap_pct > 10 %}#f59e0b{% else %}#10b981{% endif %};">({{ reverse_dcf_analysis.revenue_gap_pct }}% gap)</span>
+            </div>
+            </div>
+            
+            <!-- Margin -->
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">IMPLIED MARGIN</div>
+            <div style="font-size: 24px; font-weight: 700; color: #111827;">{{ reverse_dcf_analysis.implied_margin }}%</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                Current: {{ reverse_dcf_analysis.current_margin }}%
+                <span style="color: {% if reverse_dcf_analysis.margin_gap_pct > 20 %}#ef4444{% elif reverse_dcf_analysis.margin_gap_pct > 10 %}#f59e0b{% else %}#10b981{% endif %};">({{ reverse_dcf_analysis.margin_gap_pct }}% expansion)</span>
+            </div>
+            </div>
+            
+            <!-- HBM Mix -->
+            {% if reverse_dcf_analysis.implied_hbm_mix %}
+            <div style="background: white; border: 1px solid #e5e7eb; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">IMPLIED HBM MIX</div>
+            <div style="font-size: 24px; font-weight: 700; color: #111827;">{{ reverse_dcf_analysis.implied_hbm_mix }}%</div>
+            <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">
+                Current: {{ reverse_dcf_analysis.current_hbm_mix }}%
+            </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="background: #dbeafe; padding: 12px; border-radius: 6px;">
+            <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">Reasonableness Score: {{ reverse_dcf_analysis.reasonableness_score }}/10</div>
+            <div style="font-size: 12px; color: #1e3a8a;">
+            {% if reverse_dcf_analysis.reasonableness_score >= 7 %}
+            ✅ Market expectations appear achievable
+            {% elif reverse_dcf_analysis.reasonableness_score >= 5 %}
+            ⚠️ Expectations are ambitious but plausible
+            {% else %}
+            🔴 Expectations appear stretched
+            {% endif %}
+            </div>
+        </div>
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- VOLATILITY SURFACE ANALYSIS -->
+        <!-- ============================================================ -->
+        {% if vol_surface_analysis and vol_surface_analysis.available and analysis_mode == 'options' %}
+        <div class="card white" style="margin: 24px 0; padding: 24px; border: 2px solid #ec4899;">
+        <h2 style="margin: 0 0 16px 0; color: #9f1239;">📈 Volatility Surface Analysis</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px;">
+            <div style="text-align: center; background: #fef2f2; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #991b1b; margin-bottom: 4px;">SKEW SHAPE</div>
+            <div style="font-size: 16px; font-weight: 700; color: #991b1b;">{{ vol_surface_analysis.skew_shape|replace('_', ' ')|title }}</div>
+            </div>
+            <div style="text-align: center; background: #fef2f2; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #991b1b; margin-bottom: 4px;">PUT PREMIUM</div>
+            <div style="font-size: 16px; font-weight: 700; color: #991b1b;">{{ vol_surface_analysis.put_premium_pct }}%</div>
+            </div>
+            <div style="text-align: center; background: #fef2f2; padding: 12px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #991b1b; margin-bottom: 4px;">CALL PREMIUM</div>
+            <div style="font-size: 16px; font-weight: 700; color: #991b1b;">{{ vol_surface_analysis.call_premium_pct }}%</div>
+            </div>
+        </div>
+        
+        <div style="background: #fef3c7; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+            <div style="font-weight: 600; color: #92400e; margin-bottom: 4px;">Interpretation:</div>
+            <div style="font-size: 13px; color: #78350f;">{{ vol_surface_analysis.interpretation }}</div>
+        </div>
+        
+        <div style="font-size: 13px;">
+            <div style="font-weight: 600; color: #111827; margin-bottom: 6px;">Trading Implications:</div>
+            <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+            {% for implication in vol_surface_analysis.trading_implications %}
+            <li>{{ implication }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+        
+        <div style="margin-top: 12px; padding: 8px 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px;">
+            <strong>Favorability for {{ view|title }} Stance:</strong> {{ vol_surface_analysis.favorability }}
+        </div>
+        </div>
+        {% endif %}
+<div class="hr"></div>
+
+<!-- ========================= -->
+<!-- Auto-expiry (moved higher) -->
+<!-- ========================= -->
+{% if analysis_mode != "stock" %}
+  {% if auto_info and auto_info.get("metrics") %}
+    <div class="card white">
+      <h3 style="margin-top:0;">Auto-expiry diagnostics</h3>
+      <div class="muted" style="margin-top:-4px;">
+        <b>Suggested expiry:</b> {{ auto_info.get("suggested_expiry") }}
+        ({% if suggested_dte is not none %}{{ suggested_dte }} days{% else %}—{% endif %})
+        &nbsp; | &nbsp;
+        <b>Score:</b> {{ "%.3f"|format(auto_info.get("score")) }}
+        &nbsp; | &nbsp;
+        <b>Liquidity:</b> {{ auto_info.get("liq_grade") }} — {{ auto_info.get("liq_label") }}
+      </div>
+
+      <table style="margin-top:10px;">
+        <thead>
+          <tr><th>Metric</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          {% for k, v in auto_info.get("metrics", {}).items() %}
+            <tr>
+              <td>{{ k }}</td>
+              <td>{{ fmt(v) }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if auto_info.get("top3") %}
+        <h4>Top 3 expiry candidates</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Expiry</th>
+              <th>DTE</th>
+              <th>Score</th>
+              <th>Liquidity</th>
+              <th>pct_two_sided</th>
+              <th>median_spread</th>
+              <th>oi_norm</th>
+              <th>vol_norm</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in auto_info.get("top3", []) %}
+              <tr>
+                <td>{{ row.expiry }}</td>
+                <td>{{ row.days }}</td>
+                <td>{{ fmt(row.score) }}</td>
+                <td>{{ row.liq_grade }} — {{ row.liq_label }}</td>
+                <td>{{ fmt(row.metrics.get("pct_two_sided")) }}</td>
+                <td>{{ fmt(row.metrics.get("median_spread")) }}</td>
+                <td>{{ fmt(row.metrics.get("oi_norm")) }}</td>
+                <td>{{ fmt(row.metrics.get("vol_norm")) }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+
+      {% if auto_info.get("curve") %}
+        <div class="chart-wrap">
+          <div><b>Liquidity score vs expiry</b></div>
+          <canvas id="liqCurve" height="120"></canvas>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endif %}
+
+<div class="hr"></div>
+<div class="hr"></div>
+
+
+  <!-- ========================= -->
+
+  <div class="hr"></div>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+
+  <div style="margin-top:14px;">
+    <h3 style="margin:0 0 8px 0;">
+    <!-- ============================================================ -->
+        <!-- ============================================================ -->
+        {# Institutional confidence demoted to debug only — canonical display is the Option A block above #}
+        {% if institutional_confidence %}
+        <details style="margin: 8px 0;">
+          <summary style="cursor:pointer; font-size:12px; color:#9ca3af; padding:4px 0;">
+            🔬 Debug: Institutional Engine Output (legacy)
+          </summary>
+          <pre style="background:#f5f5f5; padding:10px; border-radius:6px; font-size:11px; overflow-x:auto; margin-top:8px; max-height:300px;">{{ institutional_confidence | tojson(indent=2) }}</pre>
+        </details>
+        {% endif %}
+{% endif %}
+
+
+        <!-- ==================================================================== -->
+        <!-- OVERLAY-DRIVEN RISK ADJUSTMENTS (Advanced Institutional Approach) -->
+        <!-- ==================================================================== -->
+        {% if overlay and overlay.present %}
+        <div class="card" style="margin-top: 24px; {% if risk_adj.overlay_used %}background: #f0f9ff; border: 2px solid #3b82f6;{% else %}background: #f9fafb; border: 2px solid #d1d5db;{% endif %}">
+          <h2>💭 Overlay-Driven Risk Adjustments</h2>
+          <p style="color:#6b7280; font-size:13px; margin: 0 0 16px 0;">
+            Your overlay affects <strong>risk plan</strong> (sizing, entry, stops, hedges) more than confidence.
+          </p>
+          
+          <!-- Overlay Summary -->
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="font-size: 16px; margin: 0 0 12px 0;">User Overlay</h3>
+            
+            {% if overlay.bull %}
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #10b981;">📈 Bullish:</strong>
+              <p style="margin: 4px 0 0 0; color: #374151; font-size: 14px;">{{ overlay.bull }}</p>
+            </div>
+            {% endif %}
+            
+            {% if overlay.bear %}
+            <div style="margin-bottom: 12px;">
+              <strong style="color: #ef4444;">📉 Bearish:</strong>
+              <p style="margin: 4px 0 0 0; color: #374151; font-size: 14px;">{{ overlay.bear }}</p>
+            </div>
+            {% endif %}
+            
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; font-size: 13px; background: #f9fafb; padding: 12px; border-radius: 6px;">
+              <div><strong>Strength:</strong> {{ overlay.strength }}/100</div>
+              <div><strong>Horizon:</strong> {{ overlay.horizon }}</div>
+              {% if overlay.type is defined and overlay.type %}
+              <div><strong>Type:</strong> {{ overlay.type }}</div>
+              {% endif %}
+              {% if overlay.confidence is defined and overlay.confidence %}
+              <div><strong>Quality:</strong> {{ overlay.confidence }}</div>
+              {% endif %}
+            </div>
+          </div>
+          
+          {% if risk_adj.overlay_used %}
+          <!-- Risk Plan Changes -->
+          <div style="background: #dbeafe; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <h3 style="font-size: 16px; margin: 0 0 12px 0; color: #1e40af;">✅ Applied to Risk Plan</h3>
+            
+            <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+              <tr style="border-bottom: 1px solid #bfdbfe;">
+                <td style="padding: 10px 0; font-weight: 600; width: 180px;">Size Multiplier:</td>
+                <td style="padding: 10px 0; color: {% if risk_adj.size_multiplier >= 1.0 %}#10b981{% else %}#ef4444{% endif %}; font-weight: 700; font-size: 16px;">
+                  {{ risk_adj.size_multiplier|round(2) }}x
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #bfdbfe;">
+                <td style="padding: 10px 0; font-weight: 600;">Entry Aggressiveness:</td>
+                <td style="padding: 10px 0; text-transform: capitalize; font-size: 15px;">
+                  {{ risk_adj.entry_aggressiveness }}
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #bfdbfe;">
+                <td style="padding: 10px 0; font-weight: 600;">Stop Tightness:</td>
+                <td style="padding: 10px 0; text-transform: capitalize; font-size: 15px;">
+                  {{ risk_adj.stop_tightness }}
+                </td>
+              </tr>
+              <tr style="border-bottom: 1px solid #bfdbfe;">
+                <td style="padding: 10px 0; font-weight: 600;">Hedge Required:</td>
+                <td style="padding: 10px 0; font-size: 15px;">
+                  {% if risk_adj.require_hedge %}
+                    <span style="color: #f59e0b; font-weight: 600;">YES</span>
+                    {% if risk_adj.hedge_style %}
+                      ({{ risk_adj.hedge_style|replace('_', ' ')|title }})
+                    {% endif %}
+                  {% else %}
+                    <span style="color: #6b7280;">No</span>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0; font-weight: 600;">Confidence Delta:</td>
+                <td style="padding: 10px 0; font-weight: 700; font-size: 16px; color: {% if risk_adj.confidence_delta > 0 %}#10b981{% elif risk_adj.confidence_delta < 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                  {{ "{:+d}".format(risk_adj.confidence_delta) }} points <span style="font-size: 12px; color: #6b7280;">(±5 max)</span>
+                </td>
+              </tr>
+            </table>
+            
+            {% if risk_adj.notes %}
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #bfdbfe;">
+              <strong style="font-size: 13px; color: #1e40af;">Rationale:</strong>
+              <ul style="margin: 8px 0; padding-left: 20px; font-size: 13px; color: #1e3a8a;">
+                {% for note in risk_adj.notes %}
+                <li style="margin: 4px 0;">{{ note }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% endif %}
+          </div>
+          {% else %}
+          <!-- Overlay Not Applied -->
+          <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <h3 style="font-size: 16px; margin: 0 0 8px 0; color: #92400e;">⚠️ Not Applied to Risk Plan</h3>
+            <p style="margin: 0; color: #78350f; font-size: 14px;">
+              {% if risk_adj.notes and risk_adj.notes|length > 0 %}
+                {{ risk_adj.notes[0] }}
+              {% else %}
+                Overlay present but not used in trade plan calculations.
+              {% endif %}
+            </p>
+          </div>
+          {% endif %}
+          
+          <!-- Confidence Breakdown -->
+          <div style="margin-top: 16px; padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <h3 style="font-size: 14px; margin: 0 0 12px 0; color: #374151;">Confidence Breakdown</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; text-align: center;">
+              <div>
+                <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Base Confidence</div>
+                <div style="font-size: 28px; font-weight: 700; color: #3b82f6;">{{ (base_confidence.get('total') if base_confidence is mapping else base_confidence)|round(0) }}%</div>
+                <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">From quant model</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Overlay Adjustment</div>
+                <div style="font-size: 28px; font-weight: 700; color: {% if risk_adj.confidence_delta > 0 %}#10b981{% elif risk_adj.confidence_delta < 0 %}#ef4444{% else %}#6b7280{% endif %};">
+                  {{ "{:+d}".format(risk_adj.confidence_delta) }}
+                </div>
+                <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">±5 max</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: #9ca3af; text-transform: uppercase; margin-bottom: 4px;">Final Confidence</div>
+                <div style="font-size: 28px; font-weight: 700; color: #10b981;">{{ final_confidence|round(0) }}%</div>
+                <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">After overlay + caps</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+
+        <!-- ============================================================ -->
+        <!-- RECOMMENDED STRATEGY (NEW) -->
+        <!-- ============================================================ -->
+        {% if recommended_strategy %}
+        <div class="card white" style="margin: 24px 0;">
+          <h2>💡 Recommended Options Strategy</h2>
+          
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 18px; color: white;">{{ recommended_strategy.structure|replace('_', ' ')|title }}</h3>
+            <p style="margin: 0; font-size: 14px; opacity: 0.9;">{{ recommended_strategy.description }}</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px;">
+            <div>
+              <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280; text-transform: uppercase;">Strikes</h4>
+              <div style="font-size: 16px; font-weight: 600; color: #111827;">
+                {% if recommended_strategy.strikes.short %}
+                  Long ${{ recommended_strategy.strikes.long }} / Short ${{ recommended_strategy.strikes.short }}
+                {% else %}
+                  ${{ recommended_strategy.strikes.long }}
+                {% endif %}
+              </div>
+            </div>
+            <div>
+              <h4 style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280; text-transform: uppercase;">Expiry</h4>
+              <div style="font-size: 16px; font-weight: 600; color: #111827;">{{ recommended_strategy.expiry_recommendation }}</div>
+            </div>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">Execution Details</h4>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div><strong>Entry Cost:</strong> ${{ recommended_strategy.execution.entry_cost }}</div>
+              <div><strong>Max Risk:</strong> ${{ recommended_strategy.execution.max_risk }}</div>
+              <div><strong>Max Reward:</strong> ${{ recommended_strategy.execution.max_reward }}</div>
+              <div><strong>Breakeven:</strong> ${{ recommended_strategy.execution.breakeven }}</div>
+              <div><strong>R/R Ratio:</strong> {{ recommended_strategy.execution.rr_ratio }}</div>
+              <div><strong>DTE:</strong> {{ recommended_strategy.execution.dte }}</div>
+            </div>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600;">Greeks Profile</h4>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center;">
+              <div>
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">DELTA</div>
+                <div style="font-size: 18px; font-weight: 600; color: #111827;">{{ recommended_strategy.greeks_profile.delta }}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">THETA</div>
+                <div style="font-size: 18px; font-weight: 600; color: #111827;">{{ recommended_strategy.greeks_profile.theta }}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">VEGA</div>
+                <div style="font-size: 18px; font-weight: 600; color: #111827;">{{ recommended_strategy.greeks_profile.vega }}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">GAMMA</div>
+                <div style="font-size: 18px; font-weight: 600; color: #111827;">{{ recommended_strategy.greeks_profile.gamma }}</div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="padding: 16px; background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 4px; margin-bottom: 12px;">
+            <div style="font-size: 12px; font-weight: 600; color: #065f46; margin-bottom: 4px;">WHY THIS STRUCTURE:</div>
+            <div style="font-size: 13px; color: #047857;">{{ recommended_strategy.reasoning }}</div>
+          </div>
+          
+          {% if recommended_strategy.pros %}
+          <div style="font-size: 14px;">
+            <strong style="color: #10b981;">✓ Pros:</strong>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              {% for pro in recommended_strategy.pros %}
+              <li style="margin: 4px 0;">{{ pro }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          
+          {% if recommended_strategy.cons %}
+          <div style="font-size: 14px; margin-top: 12px;">
+            <strong style="color: #ef4444;">✗ Cons:</strong>
+            <ul style="margin: 8px 0; padding-left: 20px;">
+              {% for con in recommended_strategy.cons %}
+              <li style="margin: 4px 0;">{{ con }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- GREEKS RISK TABLE (NEW) -->
+        <!-- ============================================================ -->
+        {% if greeks_risk %}
+        <div class="card white" style="margin: 24px 0;">
+          <h2>⚠️ Greeks Risk Analysis</h2>
+          
+          <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0;">
+            <thead>
+              <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                <th style="padding: 12px; text-align: left;">Greek</th>
+                <th style="padding: 12px; text-align: center;">Value</th>
+                <th style="padding: 12px; text-align: left;">Exposure</th>
+                <th style="padding: 12px; text-align: center;">Risk Level</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 12px;"><strong>Delta</strong></td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.delta.value }}</td>
+                <td style="padding: 12px;">{{ greeks_risk.delta.description }}</td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.delta.risk_level }}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 12px;"><strong>Gamma</strong></td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.gamma.value }}</td>
+                <td style="padding: 12px;">{{ greeks_risk.gamma.description }}</td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.gamma.risk_level }}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 12px;"><strong>Theta</strong></td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.theta.value }}</td>
+                <td style="padding: 12px;">{{ greeks_risk.theta.description }}</td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.theta.risk_level }}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 12px;"><strong>Vega</strong></td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.vega.value }}</td>
+                <td style="padding: 12px;">{{ greeks_risk.vega.description }}</td>
+                <td style="padding: 12px; text-align: center;">{{ greeks_risk.vega.risk_level }}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <!-- IV Crush Scenario -->
+          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin: 16px 0;">
+            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #92400e;">Stress Scenario: {{ greeks_risk.iv_crush_scenario.scenario }}</h4>
+            <div style="font-size: 13px; color: #78350f; margin-bottom: 8px;">
+              IV: {{ greeks_risk.iv_crush_scenario.iv_before }}% → {{ greeks_risk.iv_crush_scenario.iv_after }}% 
+              (-{{ greeks_risk.iv_crush_scenario.iv_drop_pts }}pts)
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #78350f;">
+              Impact: ${{ greeks_risk.iv_crush_scenario.dollar_impact }} ({{ greeks_risk.iv_crush_scenario.percent_impact }}%)
+            </div>
+            <div style="font-size: 13px; color: #92400e; margin-top: 8px;">
+              {{ greeks_risk.iv_crush_scenario.assessment }}
+            </div>
+          </div>
+          
+          <!-- Overall Risk -->
+          <div style="background: #f3f4f6; padding: 16px; border-radius: 4px; margin-bottom: 16px;">
+            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Overall Risk Assessment</h4>
+            <div style="font-size: 18px; font-weight: 600;">{{ greeks_risk.overall_risk }}</div>
+          </div>
+          
+          <!-- Mitigations -->
+          {% if greeks_risk.mitigations %}
+          <div>
+            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Risk Mitigation Strategies</h4>
+            <ul style="margin: 0; padding-left: 20px; font-size: 14px;">
+              {% for mitigation in greeks_risk.mitigations %}
+              <li style="margin: 6px 0;">{{ mitigation }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- REVERSE DCF (NEW) -->
+        <!-- ============================================================ -->
+        {% if reverse_dcf_analysis %}
+        <div class="card white" style="margin: 24px 0;">
+          <h2>🔄 Reverse DCF: Market Expectations at ${{ reverse_dcf_analysis.current_price }}</h2>
+          
+          <p style="margin-bottom: 16px; color: #6b7280;">To justify current price, market expects:</p>
+          
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px;">Revenue Growth</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+              <div><strong>Implied 5Y CAGR:</strong> {{ reverse_dcf_analysis.implied_revenue_cagr }}%</div>
+              <div><strong>vs Conservative DCF:</strong> {{ reverse_dcf_analysis.dcf_revenue_cagr }}%</div>
+            </div>
+            <div style="font-size: 14px; color: #374151; margin-top: 8px;">
+              <strong>Gap:</strong> {{ reverse_dcf_analysis.revenue_gap_pct }}% 
+              {% if reverse_dcf_analysis.revenue_gap_pct > 50 %}🔴 Very aggressive{% elif reverse_dcf_analysis.revenue_gap_pct > 20 %}🟡 Aggressive{% else %}🟢 Reasonable{% endif %}
+            </div>
+          </div>
+          
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px;">Margin Expansion</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 8px;">
+              <div><strong>Implied Margin:</strong> {{ reverse_dcf_analysis.implied_margin }}%</div>
+              <div><strong>vs Current:</strong> {{ reverse_dcf_analysis.current_margin }}%</div>
+            </div>
+          </div>
+          
+          {% if reverse_dcf_analysis.implied_hbm_mix %}
+          <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; font-size: 16px;">HBM Revenue Mix (Memory Stocks)</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div><strong>Implied by 2027:</strong> {{ reverse_dcf_analysis.implied_hbm_mix }}%</div>
+              <div><strong>vs Current:</strong> {{ reverse_dcf_analysis.current_hbm_mix }}%</div>
+            </div>
+          </div>
+          {% endif %}
+          
+          <div style="background: #eff6ff; padding: 16px; border-left: 4px solid #3b82f6; border-radius: 4px;">
+            <strong>Reasonableness Score:</strong> {{ reverse_dcf_analysis.reasonableness_score }}/10
+            <div style="margin-top: 8px; font-size: 14px; color: #374151;">
+              {{ reverse_dcf_analysis.assessment }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- INDUSTRY CONTEXT (NEW - FOR MEMORY STOCKS) -->
+        <!-- ============================================================ -->
+        {% if industry_context %}
+        <div class="card white" style="margin: 24px 0;">
+          <h2>🏭 Memory Industry Context</h2>
+          
+          <div style="background: #fef3c7; padding: 16px; border-left: 4px solid #f59e0b; border-radius: 4px; margin-bottom: 16px;">
+            <strong>Overall Signal:</strong> {{ industry_context.overall_signal }}
+          </div>
+          
+          <h3 style="font-size: 16px; margin: 20px 0 12px 0;">HBM (AI Memory) Dynamics</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div><strong>TAM 2024:</strong> ${{ industry_context.hbm.tam_2024 }}B</div>
+              <div><strong>TAM 2027:</strong> ${{ industry_context.hbm.tam_2027 }}B</div>
+              <div><strong>CAGR:</strong> {{ industry_context.hbm.cagr_pct }}% 🔥</div>
+              <div><strong>Market Share:</strong> {{ industry_context.hbm.ticker_share }}%</div>
+            </div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #374151;">
+              {{ industry_context.hbm.signal }}
+            </div>
+          </div>
+          
+          <h3 style="font-size: 16px; margin: 20px 0 12px 0;">DRAM Pricing Trend</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px;">
+              <div><strong>QoQ Change:</strong> {{ industry_context.dram.pricing_qoq_pct }}%</div>
+              <div><strong>YoY Change:</strong> {{ industry_context.dram.pricing_yoy_pct }}%</div>
+              <div><strong>Utilization:</strong> {{ industry_context.dram.utilization_pct }}%</div>
+            </div>
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; font-size: 13px; color: #374151;">
+              {{ industry_context.dram.signal }}
+            </div>
+          </div>
+          
+          <h3 style="font-size: 16px; margin: 20px 0 12px 0;">Capex Discipline</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+            {% if industry_context.capex %}
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px; margin-bottom: 12px;">
+              <div><strong>FY2025:</strong> ${{ industry_context.capex.fy2025_bn }}B</div>
+              <div><strong>YoY Change:</strong> {{ industry_context.capex.yoy_change_pct }}%</div>
+            </div>
+            <div style="padding: 12px; background: white; border-radius: 4px; font-size: 13px;">
+              {{ industry_context.capex.discipline_assessment }}
+            </div>
+            {% endif %}
+          </div>
+          
+          <h3 style="font-size: 16px; margin: 20px 0 12px 0;">Inventory Cycle</h3>
+          <div style="background: #f9fafb; padding: 16px; border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; font-size: 14px; margin-bottom: 12px;">
+              <div><strong>Stage:</strong> {{ industry_context.inventory_cycle.stage }}</div>
+              <div><strong>Channel Inventory:</strong> {{ industry_context.inventory_cycle.channel_inventory_weeks }} weeks</div>
+            </div>
+            <div style="padding: 12px; background: white; border-radius: 4px; font-size: 13px;">
+              {{ industry_context.inventory_cycle.signal }}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+<h2>Earnings Track Record</h2>
+            <span class="meta">Last {{ earnings_track.summary.total_quarters }} quarters • Company + peer comparison</span>
+        </div>
+
+        {% if earnings_track and earnings_track.quarters %}
+        
+        <!-- Summary Stats -->
+        <div class="earnings-summary">
+            <div class="stat">
+                <span class="label">Beat Rate:</span>
+                <span class="value">{{ earnings_track.summary.beat_rate }}%</span>
+            </div>
+            <div class="stat">
+                <span class="label">Avg Price Reaction:</span>
+                <span class="value {{ 'positive' if earnings_track.summary.avg_reaction > 0 else 'negative' }}">
+                    {{ earnings_track.summary.avg_reaction|round(1) }}%
+                </span>
+            </div>
+        </div>
+
+        <!-- Quarters (Accordion) -->
+        <div class="earnings-quarters">
+            {% for quarter in earnings_track.quarters %}
+            <details class="earnings-quarter" {% if loop.index == 1 %}open{% endif %}>
+                <summary class="quarter-header">
+                    <div class="quarter-title">
+                        <span class="fiscal-q">{{ quarter.fiscal_quarter }}</span>
+                        <span class="date">({{ quarter.date }})</span>
+                    </div>
+                    <div class="quarter-reaction {{ quarter.reaction_class }}">
+                        {{ quarter.price_reaction.change_1d_pct|round(1) }}% <span class="label-small">1D</span>
+                    </div>
+                </summary>
+
+                <div class="quarter-content">
+                    
+                    <!-- Company Results -->
+                    <div class="company-results">
+                        <h4>{{ ticker }} Results:</h4>
+                        
+                        <div class="metrics-grid">
+                            <!-- EPS -->
+                            <div class="metric">
+                                <span class="metric-label">EPS:</span>
+                                <span class="metric-value">
+                                    ${{ quarter.results.eps.actual }}
+                                    {% if quarter.results.eps.expected %}
+                                    vs est. ${{ quarter.results.eps.expected }}
+                                    <span class="verdict verdict-{{ quarter.results.eps.verdict }}">
+                                        {{ quarter.results.eps.verdict }}
+                                        {% if quarter.results.eps.surprise_pct %}
+                                        ({{ quarter.results.eps.surprise_pct|round(1) }}%)
+                                        {% endif %}
+                                    </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Revenue -->
+                            {% if quarter.results.revenue %}
+                            <div class="metric">
+                            <span class="metric-label">Revenue:</span>
+                            <span class="metric-value">
+
+                                {% if quarter.results.revenue.actual is number %}
+                                    ${{ (quarter.results.revenue.actual / 1000000000)|round(1) }}B
+
+                                {% elif quarter.results.revenue.actual %}
+                                    {{ quarter.results.revenue.actual }}
+
+                                {% else %}
+                                    Not available
+                                {% endif %}
+
+                                {% if quarter.results.revenue.expected is number %}
+                                    vs est. ${{ (quarter.results.revenue.expected / 1000000000)|round(1) }}B
+                                    <span class="verdict verdict-{{ quarter.results.revenue.verdict }}">
+                                        {{ quarter.results.revenue.verdict }}
+                                    </span>
+                                {% endif %}
+
+                            </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Price Reaction Detail -->
+                        <div class="price-reaction-detail">
+                            <span class="label">Stock Movement:</span>
+                            <span class="values">
+                                1 day: <strong class="{{ 'pos' if quarter.price_reaction.change_1d_pct > 0 else 'neg' }}">
+                                    {{ quarter.price_reaction.change_1d_pct|round(1) }}%
+                                </strong>
+                                {% if quarter.price_reaction.change_1w_pct %}
+                                | 1 week: <strong class="{{ 'pos' if quarter.price_reaction.change_1w_pct > 0 else 'neg' }}">
+                                    {{ quarter.price_reaction.change_1w_pct|round(1) }}%
+                                </strong>
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Why Explanation -->
+                        <div class="why-box">
+                            <strong>Why {{ 'up' if quarter.price_reaction.change_1d_pct > 0 else 'down' if quarter.price_reaction.change_1d_pct < 0 else 'flat' }}:</strong>
+                            {{ quarter.why }}
+                        </div>
+                        
+                        <!-- Guidance Detection (if available) -->
+                        <div class="guidance-box">
+                        <strong>Guidance:</strong>
+                        {% set gt = quarter.guidance_tone or 'unknown' %}
+                        <span class="guidance-badge guidance-{{ gt.replace(' ', '-') }}">
+                            {{ gt|title }}
+                        </span>
+                        </div>
+                    </div>
+
+                    <!-- EARNINGS NARRATIVE SUMMARY -->
+                    {% if quarter.narrative %}
+                    <div class="earnings-narrative">
+                        <h4>📝 Earnings Summary</h4>
+                        <div class="narrative-content">
+                            {{ quarter.narrative }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- PEER COMPARISON - ENHANCED VERSION -->
+                    {% if quarter.peers and quarter.peers|length > 0 %}
+                    <div class="peer-comparison">
+                        <h4>Peer Results (Same Quarter):</h4>
+                        <div class="peer-detailed-grid">
+                            {% for peer in quarter.peers %}
+                            <div class="peer-card">
+                                <div class="peer-header">
+                                    <span class="peer-ticker-large">{{ peer.ticker }}</span>
+                                    {% if peer.date %}
+                                    <span class="peer-date-small">{{ peer.date }}</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="peer-results">
+                                    <!-- EPS Result -->
+                                    <div class="peer-metric">
+                                        <span class="label">EPS:</span>
+                                        <span class="value">
+                                            {% if peer.eps_actual is not none and peer.eps_expected is not none %}
+                                            ${{ peer.eps_actual }} vs ${{ peer.eps_expected }}
+                                            <span class="verdict verdict-{{ peer.verdict|lower }}">
+                                                {{ peer.verdict }}
+                                                {% if peer.eps_surprise_pct is not none %}
+                                                ({{ peer.eps_surprise_pct }}%)
+                                                {% endif %}
+                                            </span>
+                                            {% else %}
+                                            <span class="verdict verdict-{{ peer.verdict|lower }}">{{ peer.verdict }}</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Revenue Result (NEW!) -->
+                                    {% if peer.revenue_actual is not none %}
+                                    <div class="peer-metric">
+                                        <span class="label">Revenue:</span>
+                                        <span class="value">
+                                            ${{ (peer.revenue_actual / 1000000000)|round(1) }}B
+                                            {% if peer.revenue_expected is not none %}
+                                            vs ${{ (peer.revenue_expected / 1000000000)|round(1) }}B
+                                            <span class="verdict verdict-{{ peer.revenue_verdict|lower }}">
+                                                {{ peer.revenue_verdict }}
+                                            </span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Price Reaction -->
+                                    {% if peer.price_change_1d is not none %}
+                                    <div class="peer-metric">
+                                        <span class="label">Stock:</span>
+                                        <span class="value">
+                                            <strong class="{{ 'pos' if peer.price_change_1d > 0 else 'neg' }}">
+                                                {{ "%.1f"|format(peer.price_change_1d) }}%
+                                            </strong>
+                                            (1d)
+                                            {% if peer.price_change_1w is not none %}
+                                            | <strong class="{{ 'pos' if peer.price_change_1w > 0 else 'neg' }}">
+                                                {{ "%.1f"|format(peer.price_change_1w) }}%
+                                            </strong>
+                                            (1w)
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Guidance (NEW!) -->
+                                    {% if peer.guidance_tone is not none and peer.guidance_tone != 'unknown' %}
+                                    <div class="peer-metric">
+                                        <span class="label">Guidance:</span>
+                                        <span class="value">
+                                            <span class="guidance-badge-small guidance-{{ peer.guidance_tone.replace(' ', '-') }}">
+                                                {{ peer.guidance_tone|title }}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Headlines (NEW!) -->
+                                    {% if peer.headlines and peer.headlines|length > 0 %}
+                                    <div class="peer-headlines-mini">
+                                        <span class="label-mini">Headlines:</span>
+                                        <ul class="headlines-mini-list">
+                                            {% for headline in peer.headlines[:2] %}
+                                            <li>{{ headline[:80] }}{% if headline|length > 80 %}...{% endif %}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Why Explanation -->
+                                    {% if peer.why %}
+                                    <div class="peer-why">
+                                        <span class="why-label">→</span> {{ peer.why }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ENHANCED CSS FOR PEER CARDS -->
+                    <!-- Add this to the earnings track record CSS section -->
+
+                    <style>
+                    /* Enhanced Peer Comparison */
+                    .peer-detailed-grid {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                        gap: 1rem;
+                        margin-top: 0.75rem;
+                    }
+
+                    .peer-card {
+                        background: #f8f9fa;
+                        border: 1px solid #dee2e6;
+                        border-radius: 6px;
+                        padding: 1rem;
+                    }
+
+                    .peer-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 0.75rem;
+                        padding-bottom: 0.5rem;
+                        border-bottom: 2px solid #dee2e6;
+                    }
+
+                    .peer-ticker-large {
+                        font-weight: 700;
+                        font-size: 1.1rem;
+                        color: #2c3e50;
+                    }
+
+                    .peer-date-small {
+                        font-size: 0.8rem;
+                        color: #6c757d;
+                    }
+
+                    .peer-results {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                    }
+
+                    .peer-metric {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.25rem;
+                    }
+
+                    .peer-metric .label {
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        color: #6c757d;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .peer-metric .value {
+                        font-size: 0.9rem;
+                        color: #2c3e50;
+                    }
+
+                    .peer-metric .pos {
+                        color: #28a745;
+                    }
+
+                    .peer-metric .neg {
+                        color: #dc3545;
+                    }
+
+                    .peer-why {
+                        margin-top: 0.5rem;
+                        padding: 0.5rem;
+                        background: #fff3cd;
+                        border-left: 3px solid #ffc107;
+                        border-radius: 3px;
+                        font-size: 0.85rem;
+                        color: #856404;
+                    }
+
+                    .why-label {
+                        font-weight: 700;
+                        margin-right: 0.25rem;
+                    }
+                    
+                    /* NEW: Guidance badge for peers */
+                    .guidance-badge-small {
+                        display: inline-block;
+                        padding: 0.15rem 0.4rem;
+                        border-radius: 3px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                    }
+                    
+                    .guidance-raised { background: #d4edda; color: #155724; }
+                    .guidance-lowered { background: #f8d7da; color: #721c24; }
+                    .guidance-reaffirmed { background: #d1ecf1; color: #0c5460; }
+                    .guidance-withdrew { background: #fff3cd; color: #856404; }
+                    .guidance-mentioned { background: #e7e7e7; color: #6c757d; }
+                    .guidance-mentioned-\(positive\) { background: #d4edda; color: #155724; }
+                    .guidance-mentioned-\(negative\) { background: #f8d7da; color: #721c24; }
+                    
+                    /* NEW: Mini headlines for peers */
+                    .peer-headlines-mini {
+                        margin-top: 0.5rem;
+                        padding: 0.4rem 0.6rem;
+                        background: #f8f9fa;
+                        border-radius: 3px;
+                        font-size: 0.75rem;
+                    }
+                    
+                    .label-mini {
+                        font-weight: 600;
+                        color: #6c757d;
+                        text-transform: uppercase;
+                        font-size: 0.7rem;
+                        letter-spacing: 0.5px;
+                    }
+                    
+                    .headlines-mini-list {
+                        margin: 0.25rem 0 0 0;
+                        padding-left: 1.2rem;
+                        list-style-type: disc;
+                    }
+                    
+                    .headlines-mini-list li {
+                        margin-bottom: 0.15rem;
+                        color: #495057;
+                        line-height: 1.3;
+                    }
+                    
+                    /* Earnings Narrative Summary */
+                    .earnings-narrative {
+                        margin: 1.5rem 0;
+                        padding: 1.25rem;
+                        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                        border-left: 4px solid #007bff;
+                        border-radius: 6px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                    }
+                    
+                    .earnings-narrative h4 {
+                        margin: 0 0 1rem 0;
+                        color: #007bff;
+                        font-size: 1.1rem;
+                        font-weight: 700;
+                        display: flex;
+                        align-items: center;
+                        gap: 0.5rem;
+                    }
+                    
+                    .narrative-content {
+                        color: #2c3e50;
+                        font-size: 0.95rem;
+                        line-height: 1.75;
+                        text-align: justify;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        max-width: 100%;
+                    }
+                    
+                    .narrative-content p {
+                        margin-bottom: 1rem;
+                    }
+                    
+                    .narrative-content p:last-child {
+                        margin-bottom: 0;
+                    }
+                    </style>
+
+                    <!-- Headlines -->
+                    {% if quarter.headlines and quarter.headlines|length > 0 %}
+                    <div class="headlines-box">
+                        <h4>Key Headlines:</h4>
+                        <ul>
+                            {% for headline in quarter.headlines %}
+                            <li>{{ headline }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </details>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <p class="placeholder">Earnings track record unavailable (API may be rate-limited or data not found).</p>
+        {% endif %}
+    </section>
+
+    <!-- CSS FOR EARNINGS TRACK RECORD -->
+    <style>
+    .earnings-track-record {
+        margin: 2rem 0;
+    }
+
+    /* Summary Stats */
+    .earnings-summary {
+        display: flex;
+        gap: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    .earnings-summary .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .earnings-summary .label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .earnings-summary .value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .earnings-summary .value.positive {
+        color: #28a745;
+    }
+
+    .earnings-summary .value.negative {
+        color: #dc3545;
+    }
+
+    /* Quarters */
+    .earnings-quarters {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .earnings-quarter {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .quarter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        background: #f8f9fa;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.2s;
+    }
+
+    .quarter-header:hover {
+        background: #e9ecef;
+    }
+
+    .earnings-quarter[open] .quarter-header {
+        background: #e8f4f8;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .quarter-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .fiscal-q {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #2c3e50;
+    }
+
+    .date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .quarter-reaction {
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+    }
+
+    .quarter-reaction.positive-strong {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .quarter-reaction.positive {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .quarter-reaction.neutral {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .quarter-reaction.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .quarter-reaction.negative-strong {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+
+    .label-small {
+        font-size: 0.75rem;
+        font-weight: 400;
+        opacity: 0.8;
+    }
+
+    /* Quarter Content */
+    .quarter-content {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .company-results h4,
+    .peer-comparison h4,
+    .headlines-box h4 {
+        margin: 0 0 1rem 0;
+        font-size: 0.95rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .metric-label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 80px;
+    }
+
+    .metric-value {
+        color: #2c3e50;
+    }
+
+    .verdict {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .verdict-beat {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .verdict-meet {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .verdict-miss {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .verdict-unknown {
+        background: #e2e3e5;
+        color: #6c757d;
+    }
+
+    /* Price Reaction Detail */
+    .price-reaction-detail {
+        padding: 0.75rem;
+        background: #f1f3f5;
+        border-radius: 4px;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+
+    .price-reaction-detail .label {
+        font-weight: 600;
+        color: #495057;
+        margin-right: 0.5rem;
+    }
+
+    .price-reaction-detail .pos {
+        color: #28a745;
+    }
+
+    .price-reaction-detail .neg {
+        color: #dc3545;
+    }
+
+    /* Why Box */
+    .why-box {
+        padding: 1rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        margin: 1rem 0;
+        line-height: 1.6;
+    }
+
+    .why-box strong {
+        color: #856404;
+    }
+
+    /* Guidance Box */
+    .guidance-box {
+        padding: 0.75rem;
+        background: #e8f4f8;
+        border-left: 4px solid #17a2b8;
+        border-radius: 4px;
+        margin: 0.75rem 0;
+    }
+
+    .guidance-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-left: 0.5rem;
+    }
+
+    .guidance-raised-guidance {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .guidance-lowered-guidance {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .guidance-reaffirmed-guidance {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* Peer Comparison */
+    .peer-comparison {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .peer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .peer-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .peer-ticker {
+        font-weight: 700;
+        color: #495057;
+    }
+
+    .peer-note {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    /* Headlines */
+    .headlines-box {
+        margin: 1.5rem 0;
+    }
+
+    .headlines-box ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .headlines-box li {
+        margin: 0.5rem 0;
+        color: #495057;
+        line-height: 1.5;
+    }
+    
+    /* Clickable headline links */
+    .headline-link {
+        color: #007bff;
+        text-decoration: none;
+        display: block;
+        transition: all 0.2s ease;
+    }
+    
+    .headline-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+        background: #f8f9fa;
+        padding: 0.25rem;
+        border-radius: 3px;
+    }
+    
+    .headline-link strong {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .headline-desc {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-style: italic;
+        margin-top: 0.25rem;
+        display: inline-block;
+    }
+    
+    .peer-headline-link {
+        color: #007bff;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    
+    .peer-headline-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+    </style>
+
+    {% if cb.quant_profile %}
+    {% set qp = cb.quant_profile %}
+    {% set d = qp.derived if qp.derived is defined else {} %}
+
+    <div style="margin-top:10px;">
+        <b>Quant summary:</b>
+        <ul>
+        <li>
+            overall_risk: {{ fmt(d.overall_risk if d and d.overall_risk is defined else none) }}
+            <span class="muted">(higher = more fragile / more cycle + concentration risk)</span>
+        </li>
+        <li>
+            overall_quality: {{ fmt(d.overall_quality if d and d.overall_quality is defined else none) }}
+            <span class="muted">(higher = stronger moat / durability)</span>
+        </li>
+        </ul>
+    </div>
+
+    {% if raw == 1 %}
+        <div style="margin-top:10px;">
+        <b>Raw quant scores (debug)</b>
+        <div class="muted">0.00–1.00 scale. These are deterministic scaffolds (not live fundamentals).</div>
+
+        {% if qp.cycle_exposure %}
+            <div style="margin-top:8px;"><b>Cycle exposure</b></div>
+            <table>
+            <tr><th>Factor</th><th>Score</th></tr>
+            {% for k,v in qp.cycle_exposure.items() %}
+                <tr><td>{{ k }}</td><td>{{ fmt(v) }}</td></tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+
+        {% if qp.supplier_dependency_risk %}
+            <div style="margin-top:10px;"><b>Supplier dependency risk</b></div>
+            <table>
+            <tr><th>Factor</th><th>Score</th></tr>
+            {% for k,v in qp.supplier_dependency_risk.items() %}
+                <tr><td>{{ k }}</td><td>{{ fmt(v) }}</td></tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+
+        {% if qp.customer_concentration_risk %}
+            <div style="margin-top:10px;"><b>Customer concentration risk</b></div>
+            <table>
+            <tr><th>Factor</th><th>Score</th></tr>
+            {% for k,v in qp.customer_concentration_risk.items() %}
+                <tr><td>{{ k }}</td><td>{{ fmt(v) }}</td></tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+
+        {% if qp.capital_intensity %}
+            <div style="margin-top:10px;"><b>Capital intensity</b></div>
+            <table>
+            <tr><th>Factor</th><th>Score</th></tr>
+            {% for k,v in qp.capital_intensity.items() %}
+                <tr><td>{{ k }}</td><td>{{ fmt(v) }}</td></tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+
+        {% if qp.moat_profile %}
+            <div style="margin-top:10px;"><b>Moat profile</b></div>
+            <table>
+            <tr><th>Factor</th><th>Score</th></tr>
+            {% for k,v in qp.moat_profile.items() %}
+                <tr><td>{{ k }}</td><td>{{ fmt(v) }}</td></tr>
+            {% endfor %}
+            </table>
+        {% endif %}
+        </div>
+    {% endif %}
+    {% endif %}
+
+    {% endif %}
+
+    {% if headlines and headlines|length > 0 %}
+        <div style="margin-top:12px;">
+        {% set top = headlines[:3] %}
+        <div style="margin-top:10px;">
+        <b>Top catalysts (deterministic):</b>
+        <ul>
+            {% for h in top %}
+            <li>
+                {{ h.severity or "-" }} — {{ h.title }}
+                {% if h.tags %}<span class="muted">({{ h.tags|join(", ") }})</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        </div>
+        <table>
+            <tr>
+            <th>Headline</th>
+            <th>Publisher</th>
+            <th>Published (UTC)</th>
+            <th>Tags</th>
+            <th>Severity</th>
+            </tr>
+            {% for h in headlines %}
+            <tr>
+                <td>
+                {% if h.link %}
+                    <a href="{{ h.link }}" target="_blank" rel="noopener">{{ h.title }}</a>
+                {% else %}
+                    {{ h.title }}
+                {% endif %}
+                {% if h.age_hours is not none %}
+                    <div class="muted">{{ h.age_hours }}h ago</div>
+                {% endif %}
+                </td>
+                <td>{{ h.publisher or "-" }}</td>
+                <td>{{ h.published_utc or "-" }}</td>
+                <td class="muted">{{ (h.tags or []) | join(", ") }}</td>
+                <td class="muted">{{ h.severity or "-" }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        </div>
+    {% else %}
+        <div class="muted" style="margin-top:10px;">No headlines available.</div>
+    {% endif %}
+    </div>
+
+    {# ---- Macro snapshot fallback (options mode safety) ---- #}
+    {% set _macro = macro_snapshot %}
+    {% if (not _macro) and (macro_backdrop is defined) and macro_backdrop %}
+      {% set _macro = macro_backdrop %}
+    {% elif (not _macro) and (macro_assets is defined) and macro_assets %}
+      {% set _macro = macro_assets %}
+    {% elif (not _macro) and (macro is defined) and macro %}
+      {% set _macro = macro %}
+    {% endif %}
+
+    {% if (not _macro) and confidence and confidence.reasoning and confidence.reasoning.macro %}
+      {% if confidence.reasoning.macro.snapshot is defined and confidence.reasoning.macro.snapshot %}
+        {% set _macro = confidence.reasoning.macro.snapshot %}
+      {% elif confidence.reasoning.macro.assets is defined and confidence.reasoning.macro.assets %}
+        {% set _macro = confidence.reasoning.macro.assets %}
+      {% endif %}
+    {% endif %}
+
+
+    <!-- Macro -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="section-title">
+        <h3 style="margin:0;">Macro Backdrop</h3>
+        {% if _macro and _macro.risk_regime %}
+          <span class="muted"><b>Regime:</b> {{ _macro.risk_regime }}</span>
+        {% endif %}
+      </div>
+
+      {% if _macro and _macro.warnings and _macro.warnings|length > 0 %}
+        <div style="margin-top:6px;" class="muted">
+          <b>Warnings:</b> {{ _macro.warnings | join(", ") }}
+        </div>
+      {% endif %}
+
+      {% if _macro %}
+        <table>
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Level</th>
+              <th>Trend</th>
+              <th>5d</th>
+              <th>20d</th>
+              <th>Z</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for k, v in _macro.items() %}
+              {% if v is mapping and k not in ["risk_regime", "warnings", "asof_utc"] %}
+                {% set level = v.get("level") %}
+                {% set trend = v.get("trend") %}
+                {% set chg5 = v.get("chg5") %}
+                {% set chg20 = v.get("chg20") %}
+                {% set z = v.get("zscore_3m") %}
+                <tr>
+                  <td>{{ k }}</td>
+                  <td>{% if level is not none %}{{ "%.2f"|format(level) }}{% else %}—{% endif %}</td>
+                  <td>{{ trend if trend is not none else "—" }}</td>
+                  <td>{% if chg5 is not none %}{{ "%.1f"|format(chg5 * 100) }}%{% else %}—{% endif %}</td>
+                  <td>{% if chg20 is not none %}{{ "%.1f"|format(chg20 * 100) }}%{% else %}—{% endif %}</td>
+                  <td>{% if z is not none %}{{ "%.2f"|format(z) }}{% else %}—{% endif %}</td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="muted" style="margin-top:8px;">Macro snapshot unavailable.</div>
+      {% endif %}
+    </div>
+
+
+    <!-- CSS FOR EARNINGS TRACK RECORD -->
+    <style>
+    .earnings-track-record {
+        margin: 2rem 0;
+    }
+
+    /* Summary Stats */
+    .earnings-summary {
+        display: flex;
+        gap: 2rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+
+    .earnings-summary .stat {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .earnings-summary .label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .earnings-summary .value {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2c3e50;
+    }
+
+    .earnings-summary .value.positive {
+        color: #28a745;
+    }
+
+    .earnings-summary .value.negative {
+        color: #dc3545;
+    }
+
+    /* Quarters */
+    .earnings-quarters {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .earnings-quarter {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .quarter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        background: #f8f9fa;
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.2s;
+    }
+
+    .quarter-header:hover {
+        background: #e9ecef;
+    }
+
+    .earnings-quarter[open] .quarter-header {
+        background: #e8f4f8;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .quarter-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .fiscal-q {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: #2c3e50;
+    }
+
+    .date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .quarter-reaction {
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+    }
+
+    .quarter-reaction.positive-strong {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .quarter-reaction.positive {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .quarter-reaction.neutral {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .quarter-reaction.negative {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .quarter-reaction.negative-strong {
+        background: #f5c6cb;
+        color: #721c24;
+    }
+
+    .label-small {
+        font-size: 0.75rem;
+        font-weight: 400;
+        opacity: 0.8;
+    }
+
+    /* Quarter Content */
+    .quarter-content {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .company-results h4,
+    .peer-comparison h4,
+    .headlines-box h4 {
+        margin: 0 0 1rem 0;
+        font-size: 0.95rem;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .metric {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .metric-label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 80px;
+    }
+
+    .metric-value {
+        color: #2c3e50;
+    }
+
+    .verdict {
+        display: inline-block;
+        padding: 0.15rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+    }
+
+    .verdict-beat {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .verdict-meet {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .verdict-miss {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .verdict-unknown {
+        background: #e2e3e5;
+        color: #6c757d;
+    }
+
+    /* Price Reaction Detail */
+    .price-reaction-detail {
+        padding: 0.75rem;
+        background: #f1f3f5;
+        border-radius: 4px;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+    }
+
+    .price-reaction-detail .label {
+        font-weight: 600;
+        color: #495057;
+        margin-right: 0.5rem;
+    }
+
+    .price-reaction-detail .pos {
+        color: #28a745;
+    }
+
+    .price-reaction-detail .neg {
+        color: #dc3545;
+    }
+
+    /* Why Box */
+    .why-box {
+        padding: 1rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        margin: 1rem 0;
+        line-height: 1.6;
+    }
+
+    .why-box strong {
+        color: #856404;
+    }
+
+    /* Peer Comparison */
+    .peer-comparison {
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .peer-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .peer-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .peer-ticker {
+        font-weight: 700;
+        color: #495057;
+    }
+
+    .peer-note {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    /* Headlines */
+    .headlines-box {
+        margin: 1.5rem 0;
+    }
+
+    .headlines-box ul {
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .headlines-box li {
+        margin: 0.5rem 0;
+        color: #495057;
+        line-height: 1.5;
+    }
+    </style>
+
+    <!-- DCF Valuation (Company-Specific Moats) -->
+
+    <section class="card" style="grid-column: 1 / -1;">
+        <div class="flex-between">
+            <h2>DCF Valuation</h2>
+            <span class="meta">FCFF DCF (view-aware; verify assumptions)</span>
+        </div>
+
+        {% if dcf %}
+            <!-- Dual Display: Fundamental vs Market -->
+            <div class="dcf-dual-display">
+                
+                <!-- Left: DCF Fundamental -->
+                <div class="dcf-fundamental">
+                    <div class="dcf-label">{{ dcf_display.dcf_label }}</div>
+                    <div class="dcf-value">{{ dcf_display.dcf_value }}</div>
+                    <div class="dcf-context">{{ dcf_display.dcf_context }}</div>
+                    
+                    {% if dcf.assumption_note %}
+                    <div class="dcf-note">
+                        <small>{{ dcf.assumption_note }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Right: Market Price -->
+                <div class="dcf-market">
+                    <div class="dcf-label">{{ dcf_display.market_label }}</div>
+                    <div class="dcf-value">{{ dcf_display.market_value }}</div>
+                    <div class="dcf-context">{{ dcf_display.view_context }}</div>
+                </div>
+            </div>
+            
+            <!-- Gap Explanation with Company-Specific Moats -->
+            {% if dcf_display.gap_explanation %}
+            <div class="dcf-gap-box">
+                <div class="dcf-gap-title">
+                    <strong>Interpretation:</strong> {{ dcf_display.gap_explanation }}
+                </div>
+                
+                {% if dcf_display.gap_moats and dcf_display.gap_moats|length > 0 %}
+                <ul class="dcf-moats-list">
+                    {% for moat in dcf_display.gap_moats %}
+                    <li>{{ moat }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Adaptive Weighting Note -->
+            {% if adaptive_dcf %}
+            <div class="dcf-confidence-impact">
+                <strong>Confidence Impact:</strong> 
+                DCF weight: <span class="weight-value">{% if dcf_weight_display_pct is not none and dcf_weight_display_pct > 0 %}{{ dcf_weight_display_pct }}%{% else %}{{ (adaptive_dcf.weight * 100)|round|int }}%{% endif %}</span>
+                <span class="weight-note">({{ adaptive_dcf.interpretation }})</span>
+                {% if reverse_dcf_analysis and reverse_dcf_analysis.reasonableness_score is defined %}
+                <div style="font-size:11px; color:#1565c0; margin-top:5px;">
+                  🔄 Reverse-DCF reasonableness ({{ reverse_dcf_analysis.reasonableness_score }}/10) is blended into DCF score
+                  <span style="color:#888;">(55% gap-score + 45% reasonableness)</span>
+                </div>
+                {% else %}
+                <div style="font-size:11px; color:#999; margin-top:5px;">
+                  ℹ️ Reverse-DCF not available — score based on price vs intrinsic only
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Traditional DCF Details (collapsible) -->
+            <details class="dcf-details">
+                <summary>View Full DCF Analysis</summary>
+                
+                <div class="dcf-metrics">
+                    <div class="metric">
+                        <span class="label">Intrinsic Value:</span>
+                        <span class="value">${{ dcf.intrinsic }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Upside/Downside:</span>
+                        <span class="value {% if dcf.upside_pct > 0 %}positive{% else %}negative{% endif %}">
+                            {{ dcf.upside_pct|round(1) }}%
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">WACC:</span>
+                        <span class="value">{{ (dcf.wacc * 100)|round(2) }}%</span>
+                    </div>
+                </div>
+                
+                <!-- View-Aware Parameters -->
+                {% if dcf.view_used %}
+                <div class="dcf-view-params">
+                    <h4>View-Aware Assumptions ({{ dcf.view_used|title }})</h4>
+                    <ul>
+                        <li>Growth Tier: {{ dcf.growth_tier|title }}</li>
+                        <li>Explicit Period: {{ dcf.explicit_years }} years</li>
+                        <li>Terminal Growth: {{ (dcf.terminal_value_detail.growth_rate * 100)|round(2) }}%</li>
+                        {% if dcf.margin_adjustment != 0 %}
+                        <li>Margin Adjustment: {{ (dcf.margin_adjustment * 100)|round(1) }}pp</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                <!-- Bear/Base/Bull Scenarios -->
+                <div class="dcf-scenarios">
+                    <h4>Valuation Range</h4>
+                    <div class="scenario-band">
+                        <span class="bear">${{ dcf.band.bear }}</span>
+                        <span class="base">${{ dcf.band.base }}</span>
+                        <span class="bull">${{ dcf.band.bull }}</span>
+                    </div>
+                </div>
+            </details>
+            
+        {% else %}
+            <p class="placeholder">DCF not available — backend must pass dcf into ctx.</p>
+        {% endif %}
+    </section>
+
+    <!-- CSS for Company-Specific Moats Display -->
+    <style>
+    .dcf-dual-display {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .dcf-fundamental, .dcf-market {
+        text-align: center;
+    }
+
+    .dcf-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .dcf-value {
+        font-size: 2.25rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .dcf-context {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+
+    .dcf-note {
+        margin-top: 0.75rem;
+        font-style: italic;
+        color: #95a5a6;
+        font-size: 0.8rem;
+    }
+
+    /* Gap Explanation Box with Moats */
+    .dcf-gap-box {
+        padding: 1.5rem;
+        background: #e8f4f8;
+        border-left: 4px solid #3498db;
+        margin: 1.5rem 0;
+        border-radius: 4px;
+    }
+
+    .dcf-gap-title {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    .dcf-moats-list {
+        margin: 0;
+        padding-left: 1.5rem;
+        list-style-type: disc;
+    }
+
+    .dcf-moats-list li {
+        margin: 0.5rem 0;
+        color: #34495e;
+        line-height: 1.5;
+        font-size: 0.9rem;
+    }
+
+    .dcf-moats-list li::marker {
+        color: #3498db;
+    }
+
+    /* Confidence Impact */
+    .dcf-confidence-impact {
+        padding: 1rem;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .dcf-confidence-impact .weight-value {
+        font-weight: 700;
+        color: #856404;
+    }
+
+    .dcf-confidence-impact .weight-note {
+        color: #856404;
+        font-size: 0.85rem;
+    }
+
+    /* Collapsible Details */
+    .dcf-details {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .dcf-details summary {
+        cursor: pointer;
+        font-weight: 600;
+        color: #495057;
+        padding: 0.5rem 0;
+        user-select: none;
+    }
+
+    .dcf-details summary:hover {
+        color: #007bff;
+    }
+
+    .dcf-details[open] summary {
+        margin-bottom: 1rem;
+    }
+
+    .dcf-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+
+    .dcf-metrics .metric {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+    }
+
+    .dcf-metrics .label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    .dcf-metrics .value {
+        font-weight: 600;
+    }
+
+    .dcf-metrics .positive {
+        color: #28a745;
+    }
+
+    .dcf-metrics .negative {
+        color: #dc3545;
+    }
+
+    .dcf-view-params {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: #f1f3f5;
+        border-radius: 4px;
+    }
+
+    .dcf-view-params h4 {
+        margin-top: 0;
+        color: #495057;
+        font-size: 0.95rem;
+    }
+
+    .dcf-view-params ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+
+    .dcf-view-params li {
+        margin: 0.25rem 0;
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .dcf-scenarios {
+        margin: 1rem 0;
+    }
+
+    .dcf-scenarios h4 {
+        margin-bottom: 0.75rem;
+        color: #495057;
+        font-size: 0.95rem;
+    }
+
+    .scenario-band {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: linear-gradient(to right, #ff6b6b20, #51cf6620, #4ecdc420);
+        border-radius: 4px;
+    }
+
+    .scenario-band span {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .scenario-band .bear { color: #c0392b; }
+    .scenario-band .base { color: #2c3e50; }
+    .scenario-band .bull { color: #27ae60; }
+    </style>
+
+
+        <!-- Peers snapshot (Phase 8) -->
+    <div class="card" style="grid-column: 1 / -1;">
+      <div class="section-title">
+        <h3 style="margin:0;">Peers Snapshot</h3>
+        <span class="muted">
+          <b>Cluster:</b> {{ (peer_snapshot.cluster if peer_snapshot else cluster) or "—" }}
+          • <b>Peers:</b> {{ (peer_snapshot.peer_count if peer_snapshot else (peers|length)) or 0 }}
+        </span>
+      </div>
+
+      {% if peer_snapshot and peer_snapshot.focal %}
+        {% set f = peer_snapshot.focal %}
+        <div class="muted" style="margin-top:6px;">
+          {% for x in f.flags %}• {{ x }} {% endfor %}
+        </div>
+
+        <div class="kpi-row" style="margin-top:10px;">
+          <div class="kpi">
+            <b>Trailing P/E</b>
+            {% if f.trailing_pe is not none %}{{ "%.2f"|format(f.trailing_pe) }}{% else %}—{% endif %}
+          </div>
+          <div class="kpi">
+            <b>Forward P/E</b>
+            {% if f.forward_pe is not none %}{{ "%.2f"|format(f.forward_pe) }}{% else %}—{% endif %}
+          </div>
+          <div class="kpi">
+            <b>PEG</b>
+            {% if f.peg is not none %}{{ "%.2f"|format(f.peg) }}{% else %}—{% endif %}
+          </div>
+        </div>
+
+        {% set tb = peer_snapshot.bands.trailing_pe %}
+        {% set fb = peer_snapshot.bands.forward_pe %}
+        <div class="muted" style="margin-top:10px;">
+          <b>Peer bands (P25 / Median / P75):</b>
+          Trailing P/E:
+          {% if tb.p25 is not none %}{{ "%.2f"|format(tb.p25) }}{% else %}—{% endif %} /
+          {% if tb.median is not none %}{{ "%.2f"|format(tb.median) }}{% else %}—{% endif %} /
+          {% if tb.p75 is not none %}{{ "%.2f"|format(tb.p75) }}{% else %}—{% endif %}
+          &nbsp; | &nbsp;
+          Forward P/E:
+          {% if fb.p25 is not none %}{{ "%.2f"|format(fb.p25) }}{% else %}—{% endif %} /
+          {% if fb.median is not none %}{{ "%.2f"|format(fb.median) }}{% else %}—{% endif %} /
+          {% if fb.p75 is not none %}{{ "%.2f"|format(fb.p75) }}{% else %}—{% endif %}
+        </div>
+
+        {% if peer_snapshot.rows and peer_snapshot.rows|length > 0 %}
+          <table>
+            <thead>
+              <tr>
+                <th>Ticker</th>
+                <th>Name</th>
+                <th>Last</th>
+                <th>Mkt Cap</th>
+                <th>Trailing P/E</th>
+                <th>Forward P/E</th>
+                <th>PEG</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in peer_snapshot.rows %}
+                <tr>
+                  <td><b>{{ r.ticker }}</b></td>
+                  <td>{{ r.name }}</td>
+                  <td>{% if r.last is not none %}{{ "%.2f"|format(r.last) }}{% else %}—{% endif %}</td>
+                  <td>{% if r.market_cap is not none %}${{ "{:,.0f}".format(r.market_cap) }}{% else %}—{% endif %}</td>
+                  <td>{% if r.trailing_pe is not none %}{{ "%.2f"|format(r.trailing_pe) }}{% else %}—{% endif %}</td>
+                  <td>{% if r.forward_pe is not none %}{{ "%.2f"|format(r.forward_pe) }}{% else %}—{% endif %}</td>
+                  <td>{% if r.peg is not none %}{{ "%.2f"|format(r.peg) }}{% else %}—{% endif %}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+
+      {% else %}
+        <div class="muted" style="margin-top:8px;">
+          Peer snapshot unavailable (no peers or missing Yahoo valuation fields).
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="box" style="grid-column: 1 / -1;">
+    <h2>Alpha vs Peers / SOX Proxy</h2>
+
+    {% if alpha_snapshot and alpha_snapshot.ok %}
+        <div class="muted">
+        Window: {{ alpha_snapshot.window }}d • Period: {{ alpha_snapshot.period }} • SOX proxy: {{ alpha_snapshot.sox_proxy }}
+        </div>
+
+        <table style="margin-top:10px;">
+        <tr>
+            <th>Benchmark</th>
+            <th>Beta</th>
+            <th>Alpha (daily)</th>
+            <th>R²</th>
+            <th>Alpha (cum, ~window)</th>
+        </tr>
+        <tr>
+            <td>Peer basket</td>
+            <td>{{ alpha_snapshot.vs_peers.beta if alpha_snapshot.vs_peers else "-" }}</td>
+            <td>{{ alpha_snapshot.vs_peers.alpha_daily if alpha_snapshot.vs_peers else "-" }}</td>
+            <td>{{ alpha_snapshot.vs_peers.r2 if alpha_snapshot.vs_peers else "-" }}</td>
+            <td>
+            {% if alpha_snapshot.vs_peers and alpha_snapshot.vs_peers.alpha_60d_cum_pct is not none %}
+                {{ alpha_snapshot.vs_peers.alpha_60d_cum_pct }}%
+            {% else %}-{% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td>{{ alpha_snapshot.sox_proxy }}</td>
+            <td>{{ alpha_snapshot.vs_sox.beta if alpha_snapshot.vs_sox else "-" }}</td>
+            <td>{{ alpha_snapshot.vs_sox.alpha_daily if alpha_snapshot.vs_sox else "-" }}</td>
+            <td>{{ alpha_snapshot.vs_sox.r2 if alpha_snapshot.vs_sox else "-" }}</td>
+            <td>
+            {% if alpha_snapshot.vs_sox and alpha_snapshot.vs_sox.alpha_60d_cum_pct is not none %}
+                {{ alpha_snapshot.vs_sox.alpha_60d_cum_pct }}%
+            {% else %}-{% endif %}
+            </td>
+        </tr>
+        </table>
+
+        <div class="muted" style="margin-top:8px;">
+        Notes: Alpha here is residual return vs benchmark (deterministic; no AI). Use as a “supporting signal” only.
+        </div>
+    {% else %}
+        <div class="muted">Alpha snapshot unavailable.</div>
+    {% endif %}
+    </div>
+
+    {% if alpha_regime and alpha_regime.regime %}
+    <div class="muted" style="margin-top:6px;">
+        Alpha regime: {{ alpha_regime.regime }}
+        {% if alpha_regime.alpha_60d_cum_pct is not none %}
+        ({{ alpha_regime.alpha_60d_cum_pct }}%)
+        {% endif %}
+    </div>
+    {% endif %}
+
+
+  <div class="hr"></div>
+
+  {% if analysis_mode == 'options' %}
+  <!-- ========================= -->
+  <!-- Trader Analytics (OPTIONS MODE ONLY) -->
+  <!-- ========================= -->
+    <div class="card white" style="margin-top:6px; grid-column: 1 / -1;">
+    <h3 style="margin-top:0;">Trader Analytics</h3>
+
+    <div class="muted" style="margin-top:6px;">
+      <b>Put/Call:</b>
+      OI:
+      {% if pcr and pcr["pcr_oi"] is not none %}
+        {{ "%.2f"|format(pcr["pcr_oi"]) }}
+      {% else %}
+        —
+        {% if pcr and pcr.get("oi_missing") == 1 %}
+          <span class="muted">(OI missing from Yahoo)</span>
+        {% endif %}
+      {% endif %}
+      &nbsp; | &nbsp;
+      Vol:
+      {% if pcr and pcr["pcr_vol"] is not none %}
+        {{ "%.2f"|format(pcr["pcr_vol"]) }}
+      {% else %}—{% endif %}
+    </div>
+
+    <div class="muted" style="margin-top:6px;">
+      <b>IV Rank:</b>
+      {% if iv_rank and iv_rank["iv_rank"] is not none %}
+        {{ "%.0f"|format(iv_rank["iv_rank"] * 100) }}%
+        &nbsp; | &nbsp;
+        <b>IV Percentile:</b>
+        {{ "%.0f"|format(iv_rank["iv_percentile"] * 100) }}%
+        <span class="muted">({{ iv_rank["n_points"] }} pts)</span>
+      {% else %}
+        —
+        <span class="muted">({{ iv_rank["note"] if iv_rank else "no data" }})</span>
+      {% endif %}
+    </div>
+
+    <div class="muted" style="margin-top:6px;">
+      <b>ATM straddle:</b>
+      {% if straddle is defined and straddle and straddle.straddle_mid is not none and straddle_implied_move_pct is defined and straddle_implied_move_pct is not none %}
+        {{ "%.2f"|format(straddle.straddle_mid) }} (±{{ "%.2f"|format(straddle_implied_move_pct * 100) }}%)
+      {% else %}—{% endif %}
+      &nbsp; | &nbsp;
+      <b>HV20 expected:</b> (planned {{ planned_days }}d)
+      {% if hv20_move_pct_planned is defined and hv20_move_pct_planned is not none %}
+        ±{{ "%.2f"|format(hv20_move_pct_planned * 100) }}%
+      {% else %}—{% endif %}
+      {% if straddle_vs_hv20 is defined and straddle_vs_hv20 is not none %}
+        &nbsp; | &nbsp;
+        <b>Implied/HV20:</b> {{ "%.2f"|format(straddle_vs_hv20) }}×
+      {% endif %}
+    </div>
+
+    <div class="chart-wrap" style="margin-top:6px;">
+      <div><b>IV Term Structure (ATM IV by DTE)</b></div>
+      <canvas id="chart_term" height="120"></canvas>
+    </div>
+
+    <div class="chart-wrap" style="margin-top:6px;">
+      <div><b>IV Skew (selected expiry)</b></div>
+      <canvas id="chart_skew" height="120"></canvas>
+    </div>
+
+    <div class="chart-wrap" style="margin-top:6px;">
+      <div><b>OI + Volume Profile by Strike (selected expiry)</b></div>
+      <canvas id="chart_oivol" height="140"></canvas>
+      <div id="oi_note" class="muted" style="margin-top:6px; display:none;">
+        OI missing from Yahoo — chart shows volume only.
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ========================= -->
+  <!-- Charts JS -->
+  <!-- ========================= -->
+  <script>
+    const ivTerm = {{ iv_term_json | default("null") | safe }};
+    const ivSkew = {{ iv_skew_json | default("null") | safe }};
+    const oiVol  = {{ oi_vol_json | default("[]") | safe }};
+    const curveData = {{ auto_curve_json | default("[]") | safe }};
+
+    function toPct(x){ return (x == null) ? null : (x * 100); }
+
+    // ----- Liquidity curve -----
+    if (curveData && Array.isArray(curveData) && curveData.length) {
+      const labels = curveData.map(x => x.expiry);
+      const scores = curveData.map(x => x.score);
+      const el = document.getElementById("liqCurve");
+      if (el) {
+        new Chart(el, {
+          type: "bar",
+          data: { labels, datasets: [{ label: "Liquidity score", data: scores }] },
+          options: {
+            scales: { y: { min: 0, max: 1, title: { display: true, text: "Score (0–1)" } } },
+            plugins: { tooltip: { callbacks: { label: ctx => Number(ctx.raw).toFixed(3) } } }
+          }
+        });
+      }
+    }
+
+    // ----- Term structure -----
+    if (ivTerm && Array.isArray(ivTerm) && ivTerm.length) {
+      const xs = ivTerm.map(p => p.dte);
+      const ys = ivTerm.map(p => toPct(p.atm_iv));
+      const el = document.getElementById("chart_term");
+      if (el) {
+        new Chart(el, {
+          type: "line",
+          data: { labels: xs, datasets: [{ label: "ATM IV (%)", data: ys, tension: 0.25 }] },
+          options: { scales: { x: { title: { display: true, text: "DTE" } }, y: { title: { display: true, text: "IV (%)" } } } }
+        });
+      }
+    }
+
+    // ----- Skew -----
+    if (ivSkew && Array.isArray(ivSkew) && ivSkew.length) {
+      const xs = ivSkew.map(p => p.strike);
+      const ys = ivSkew.map(p => toPct(p.iv));
+      const el = document.getElementById("chart_skew");
+      if (el) {
+        new Chart(el, {
+          type: "line",
+          data: { labels: xs, datasets: [{ label: "IV (%)", data: ys, tension: 0.15 }] },
+          options: { scales: { x: { title: { display: true, text: "Strike" } }, y: { title: { display: true, text: "IV (%)" } } } }
+        });
+      }
+    }
+
+    // ----- OI + Volume profile -----
+    if (oiVol && Array.isArray(oiVol) && oiVol.length) {
+      const strikes = oiVol.map(p => p.strike);
+      const callOi  = oiVol.map(p => p.call_oi || 0);
+      const putOi   = oiVol.map(p => p.put_oi || 0);
+      const callVol = oiVol.map(p => p.call_vol || 0);
+      const putVol  = oiVol.map(p => p.put_vol || 0);
+
+      const totalCallOi = callOi.reduce((a,b)=>a+b, 0);
+      const totalPutOi  = putOi.reduce((a,b)=>a+b, 0);
+      const hasOi = (totalCallOi + totalPutOi) > 0;
+
+      const datasets = [];
+      const scales = {
+        x: { type: "category", ticks: { maxTicksLimit: 12 } },
+        yVol: {
+          position: "right",
+          title: { display: true, text: "Volume (contracts)" },
+          beginAtZero: true,
+          grid: { drawOnChartArea: false }
+        }
+      };
+
+      if (hasOi) {
+        datasets.push({ type: "bar", label: "Call OI", data: callOi, yAxisID: "yOI" });
+        datasets.push({ type: "bar", label: "Put OI",  data: putOi,  yAxisID: "yOI" });
+        scales.yOI = {
+          position: "left",
+          title: { display: true, text: "Open Interest (contracts)" },
+          beginAtZero: true
+        };
+      } else {
+        const note = document.getElementById("oi_note");
+        if (note) note.style.display = "block";
+      }
+
+      datasets.push({ type: "line", label: "Call Vol", data: callVol, yAxisID: "yVol", tension: 0.25, pointRadius: 0 });
+      datasets.push({ type: "line", label: "Put Vol",  data: putVol,  yAxisID: "yVol", tension: 0.25, pointRadius: 0 });
+
+      const el = document.getElementById("chart_oivol");
+      if (el) {
+        new Chart(el, {
+          data: { labels: strikes, datasets },
+          options: {
+            interaction: { mode: "index", intersect: false },
+            scales
+          }
+        });
+      }
+    }
+  </script>
+
+
+
+  <!-- ========================= -->
+  <!-- GEMINI DEBUG PANEL (debug_ai=1 only) -->
+  <!-- ========================= -->
+  {% if debug_ai and ai_conviction and ai_conviction.trace_id %}
+  <details class="card white" style="margin-top:20px;">
+    <summary style="cursor:pointer; font-weight:700; padding:10px 0;">🔍 Debug: Gemini payload/response</summary>
+    <div class="muted" style="font-size:12px; margin-top:6px;">Trace ID: <code>{{ ai_conviction.trace_id }}</code></div>
+    <div class="muted" style="font-size:12px; margin-top:4px;">
+      Model: {{ ai_conviction.model or 'unknown' }} &nbsp;|&nbsp;
+      Disagreement: {{ ai_conviction.disagreement_flag or 'n/a' }}
+      (Δ {{ ai_conviction.disagreement_abs or 0 }})
+    </div>
+    <pre style="font-size:11px; overflow:auto; background:#f8f9fa; padding:10px; border-radius:8px; margin-top:10px; max-height:400px;">{{ ai_conviction.debug | tojson(indent=2) if ai_conviction.debug else '{}' }}</pre>
+  </details>
+  {% endif %}
+  <!-- END DEBUG PANEL -->
+
+</body>
+</html>

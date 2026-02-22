@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>US Semiconductors</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 24px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #fafafa; }
+    .muted { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>US-Listed Semiconductor Universe</h1>
+  <p><a href="/">← Back</a></p>
+  <p class="muted">This is your “company catalogue”.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Display</th>
+        <th>Symbol</th>
+        <th>Exchange</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in universe %}
+        <tr>
+          <td>{{ row.display }}</td>
+          <td>{{ row.symbol }}</td>
+          <td>{{ row.exchange }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
