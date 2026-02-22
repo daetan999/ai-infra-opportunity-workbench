@@ -7,75 +7,37 @@ import os
 from datetime import datetime, date
 from typing import Dict, Optional, Tuple
 
-# ========================================
-# API KEY CONFIGURATION - 5 SETS
-# ========================================
-
-# ========================================
-# SET 1 - daetan999@gmail.com
-# ========================================
-#ALPHA_VANTAGE_KEY = " S2P33SDFC20QS6KE"
-#FMP_KEY = "1MiWM5ABxN3xsyshtu1gHZSZ4C6LU8uJ"
-#NEWS_API_KEY = "b0f4169249e3414582069134a5e4a2a1"
-
-# ========================================
-# SET 2 - daetanlovesleep@gmail.com
-# ========================================
-#ALPHA_VANTAGE_KEY = “WZLS876HIRLAVE97”
-#FMP_KEY = "AfY0JceMawOWCCIR7c9E4Y7y70R6hp5q"
-#NEWS_API_KEY = "e9e57a1dfb00487c947d6faae8e5aeef"
-
-# ========================================
-# SET 3 - vanessalim420123@gmail.com
-# ========================================
-#ALPHA_VANTAGE_KEY = “G3SIPCVKZ8H5UMH0”
-#FMP_KEY = "zPfXdy7ltfGH53MohtJ01OGXxuCl0Ukq”
-#NEWS_API_KEY = “d36323e7d22040588fd781b47ff8d84c”
-
-# ========================================
-# SET 4 - tankirkjundae@gmail.com
-# ========================================
-#ALPHA_VANTAGE_KEY = “3FM2K9S4CL14UNW5”
-#FMP_KEY = "TMHnjr2bW5yryaRC46SCNCfQdvCOOcgy”
-#NEWS_API_KEY (using bobbybombastic34@gmail.com) = “4cf39d2d49554225be1fea35fcb630e4”
-
-# ========================================
-# SET 5 - dae26811@gmail.com
-# ========================================
-#ALPHA_VANTAGE_KEY = “AM19MKSBHLOHBDT4”
-#FMP_KEY = "WVCDCcHfSUWfyutsKPVPOyn1TL6ZL5Nj”
-#NEWS_API_KEY = “5d7bdd4d040442979c7f6bf0849a152a”
 
 API_KEY_SETS = [
     {
         "name": "Set 1 (Primary)",
-        "alpha_vantage": "32B2RBELB93I0I4H",                    #  Set 1 Alpha Vantage key
-        "fmp": "1MiWM5ABxN3xsyshtu1gHZSZ4C6LU8uJ",               #   Set 1 FMP key
-        "newsapi": "b0f4169249e3414582069134a5e4a2a",          #   Set 1 NewsAPI key
+        "alpha_vantage": "",
+        "fmp": "",
+        "newsapi": "",
     },
     {
         "name": "Set 2 (Secondary)",
-        "alpha_vantage": "WZLS876HIRLAVE97",                        #   Set 2 Alpha Vantage key
-        "fmp": "AfY0JceMawOWCCIR7c9E4Y7y70R6hp5q",               #   Set 2 FMP key
-        "newsapi": "e9e57a1dfb00487c947d6faae8e5aeef",          #   Set 2 NewsAPI key
+        "alpha_vantage": "",
+        "fmp": "",
+        "newsapi": "",
     },
     {
         "name": "Set 3 (Tertiary)",
-        "alpha_vantage": "G3SIPCVKZ8H5UMH0",                        #   Set 3 Alpha Vantage key
-        "fmp": "zPfXdy7ltfGH53MohtJ01OGXxuCl0Ukq",               #   Set 3 FMP key
-        "newsapi": "d36323e7d22040588fd781b47ff8d84c",          #   Set 3 NewsAPI key
+        "alpha_vantage": "",
+        "fmp": "",
+        "newsapi": "",
     },
     {
         "name": "Set 4 (Backup 1)",
-        "alpha_vantage": "3FM2K9S4CL14UNW5",                    #   Set 4 Alpha Vantage key
-        "fmp": "TMHnjr2bW5yryaRC46SCNCfQdvCOOcgy",               #   Set 4 FMP key
-        "newsapi": "4cf39d2d49554225be1fea35fcb630e4",          #   Set 4 NewsAPI key
+        "alpha_vantage": "",
+        "fmp": "",
+        "newsapi": "",
     },
     {
         "name": "Set 5 (Backup 2)",
-        "alpha_vantage": "AM19MKSBHLOHBDT4",                    #   Set 5 Alpha Vantage key
-        "fmp": "WVCDCcHfSUWfyutsKPVPOyn1TL6ZL5Nj",               #   Set 5 FMP key
-        "newsapi": "5d7bdd4d040442979c7f6bf0849a152a",          #   Set 5 NewsAPI key
+        "alpha_vantage": "",
+        "fmp": "",
+        "newsapi": "",
     },
 ]
 
