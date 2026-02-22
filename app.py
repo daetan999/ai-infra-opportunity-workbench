@@ -5296,9 +5296,12 @@ def semis_expiries(
     horizon: str | None = Query(default=None, description="short/swing/long"),
 ):
     ticker = ticker.strip().upper()
-    t = yf.Ticker(ticker)
+    t = yf.Ticker(ticker, session=SHARED_YF_SESSION)
 
-    expiries = list(t.options or [])
+    try:
+        expiries = list(t.options or [])
+    except Exception:
+        expiries = []
     out = [{"expiry": e, "dte": _days_to_exp(e)} for e in expiries]
     out.sort(key=lambda x: x["dte"])
 

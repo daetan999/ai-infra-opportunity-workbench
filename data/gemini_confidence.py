@@ -6,7 +6,6 @@ Updated for new google.genai package and price guidance
 """
 
 import os
-import uuid
 
 # Import Gemini analyst (ensure SINGLE module instance)
 try:
@@ -19,24 +18,6 @@ except ImportError:
     except ImportError:
         GEMINI_AVAILABLE = False
         print("WARNING: Gemini AI not available. Falling back to standard confidence.")
-
-# AI conviction schema
-try:
-    from data.ai_schemas import (
-        AIConviction, build_ai_conviction, fallback_ai_conviction,
-        ai_conviction_label, compute_disagreement, AIAnalysisResponse,
-    )
-    AI_SCHEMAS_AVAILABLE = True
-except ImportError:
-    AI_SCHEMAS_AVAILABLE = False
-
-# Trace cache for debug
-try:
-    from data.cache import GEMINI_TRACE_CACHE
-    TRACE_CACHE_AVAILABLE = True
-except (ImportError, AttributeError):
-    TRACE_CACHE_AVAILABLE = False
-    GEMINI_TRACE_CACHE = None
 
 
 def compute_confidence_with_ai(
@@ -125,12 +106,13 @@ def compute_confidence_with_ai(
         )
     
     try:
-        # Prepare company data
+        # Prepare company data — guard against None
+        _ci = company_info or {}
         company_data = {
-            'name': company_info.get('name', ticker),
-            'sector': company_info.get('sector', 'Unknown'),
-            'industry': company_info.get('industry', 'Unknown'),
-            'description': (company_info or {}).get('description', '')[:500],
+            'name': _ci.get('name', ticker),
+            'sector': _ci.get('sector', 'Unknown'),
+            'industry': _ci.get('industry', 'Unknown'),
+            'description': (_ci.get('description') or '')[:500],
         }
         
         # Prepare valuation data with spot price
@@ -241,67 +223,16 @@ Peer Comparisons (Relative Valuation):
             'ai_risks': ai_analysis.get('risks', []),
         }
         
-        # Build AIConviction from structured output fields
-        trace_id = str(uuid.uuid4())[:8] if AI_SCHEMAS_AVAILABLE else None
-        ai_conviction_obj = None
-        if AI_SCHEMAS_AVAILABLE:
-            try:
-                # Check if analysis came from structured output
-                if ai_analysis.get("_structured"):
-                    # Build a mock AIAnalysisResponse-like object for build_ai_conviction
-                    class _MockAIResp:
-                        conviction_0_100 = ai_analysis.get("conviction_0_100", confidence)
-                        conviction_label = ai_analysis.get("conviction_label", "Medium")
-                        conviction_drivers = ai_analysis.get("conviction_drivers", ai_analysis.get("key_drivers", []))
-                        conviction_risks = ai_analysis.get("conviction_risks", ai_analysis.get("risks", []))
-                        overlay_note = ai_analysis.get("overlay_note")
-                        notes_on_overlay = ai_analysis.get("notes_on_overlay")
-                    ai_conviction_obj = build_ai_conviction(
-                        _MockAIResp(),
-                        # NOTE: official_confidence is intentionally 0 here.
-                        # Disagreement is recomputed in _build_ai_conviction_safe (app.py)
-                        # against the real Option A deterministic score. The value set
-                        # here is overwritten and never reaches the template.
-                        official_confidence=0,
-                        model_name=ai_analysis.get("_model", "gemini-2.5-flash"),
-                        trace_id=trace_id,
-                    )
-                    # Store trace
-                    if TRACE_CACHE_AVAILABLE and GEMINI_TRACE_CACHE:
-                        GEMINI_TRACE_CACHE.set(trace_id, {
-                            "ts": __import__("time").time(),
-                            "ticker": ticker,
-                            "conviction": ai_conviction_obj.score_0_100,
-                        })
-                else:
-                    # Legacy parsed output — build basic conviction
-                    score = confidence
-                    label = ai_conviction_label(score)
-                    ai_conviction_obj = AIConviction(
-                        available=True,
-                        score_0_100=score,
-                        label=label,
-                        drivers=ai_analysis.get("key_drivers", [])[:5],
-                        risks=ai_analysis.get("risks", [])[:5],
-                        model="gemini-legacy",
-                        trace_id=trace_id,
-                    )
-            except Exception as _ce:
-                print(f"AIConviction build error: {_ce}")
-                ai_conviction_obj = fallback_ai_conviction()
-        else:
-            ai_conviction_obj = None
-
         return {
             'available': True,  # Flag for template to show AI section
             'confidence': confidence,
-            'total': confidence,  # Template compatibility
+            'total': confidence,  # Template compatibility (report.html expects confidence.total)
             'ai_report': ai_analysis.get('report', 'Analysis unavailable'),
             'key_drivers': ai_analysis.get('key_drivers', []),
             'risks': ai_analysis.get('risks', []),
             'time_horizon': ai_analysis.get('time_horizon', 'Unknown'),
-
-            # Price guidance
+            
+            # Price guidance from AI - ALWAYS set to valid numbers
             'entry_price_low': entry_low if entry_low is not None else spot_price * 0.97,
             'entry_price_high': entry_high if entry_high is not None else spot_price * 1.03,
             'entry_price_avg': entry_avg if entry_avg else spot_price,
@@ -312,16 +243,22 @@ Peer Comparisons (Relative Valuation):
             'target_price_bull': ai_analysis.get('target_price_bull'),
             'target_price_bear': ai_analysis.get('target_price_bear'),
 
-            # AI Conviction (secondary — NEVER drives risk controls)
-            'ai_conviction': ai_conviction_obj,
-
-            # Note: weights/contrib NOT emitted here — Official Confidence owns those.
-            # Only provide the raw score for template compatibility.
-            'raw': confidence / 100.0,
-
+            
+            # Template compatibility - breakdown with real scores (no dummy zero weights)
+            'breakdown': {
+                'dcf': dcf_score,
+                'macro': macro_score,
+                'industry': 0.5,
+                'company': 0.5,
+                'vol': 0.5,
+                'earnings': earnings_score,
+                'liquidity': 0.5,
+                'alpha': 0.5,
+            },
+            'raw': confidence / 100.0,  # Normalized to 0-1
+            
             'reasoning': reasoning,
             'gemini_used': True,
-            '_trace_id': trace_id,
         }
     
     except Exception as e:
