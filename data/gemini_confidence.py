@@ -130,7 +130,7 @@ def compute_confidence_with_ai(
             'name': company_info.get('name', ticker),
             'sector': company_info.get('sector', 'Unknown'),
             'industry': company_info.get('industry', 'Unknown'),
-            'description': company_info.get('description', '')[:500],
+            'description': (company_info or {}).get('description', '')[:500],
         }
         
         # Prepare valuation data with spot price
