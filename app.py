@@ -51,43 +51,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import json
-import requests as _requests
-import time as _time
-
-# ── Shared yfinance session with realistic User-Agent ─────────────────────
-# Using a single session reduces TCP overhead and makes Yahoo less likely
-# to flag traffic as bot-like.
-SHARED_YF_SESSION = _requests.Session()
-SHARED_YF_SESSION.headers.update({
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/122.0.0.0 Safari/537.36"
-    ),
-})
-
-def _yf_call(fn, retries: int = 3, base_delay: float = 2.0):
-    """
-    Call a zero-argument lambda that wraps a yfinance request.
-    Retries up to `retries` times with exponential backoff on 429 / rate-limit.
-    Returns None on final failure instead of raising, so callers can degrade gracefully.
-    """
-    for attempt in range(retries):
-        try:
-            return fn()
-        except Exception as exc:
-            msg = str(exc).lower()
-            is_rate_limit = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
-            if is_rate_limit and attempt < retries - 1:
-                delay = base_delay * (2 ** attempt)
-                print(f"⚠️ yfinance rate-limited (attempt {attempt+1}/{retries}), retrying in {delay:.1f}s…")
-                _time.sleep(delay)
-            else:
-                # Not a rate-limit error, or final attempt — return None
-                if not is_rate_limit:
-                    print(f"⚠️ yfinance call failed (non-429): {exc}")
-                return None
-    return None
 from fastapi import FastAPI, Request, Form, Query, HTTPException
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse, JSONResponse
@@ -390,11 +353,7 @@ def build_peer_snapshot(ticker: str, peers: list[str], cluster: str | None = Non
     for sym in peers[:30]:
         info = {}
         try:
-            info = COMPANY_CACHE.get_or_set(
-                f"yfinfo:{sym}",
-                lambda _s=sym: (_yf_call(lambda: yf.Ticker(_s, session=SHARED_YF_SESSION).info) or {}),
-                ttl_sec=6 * 3600,  # 6 hours — peer info rarely changes intraday
-            ) or {}
+            info = (yf.Ticker(sym).info or {})
         except Exception:
             info = {}
 
@@ -854,8 +813,8 @@ def cached_option_chain(ticker: str, expiry: str):
     key = f"chain:{ticker}:{expiry}"
     return CHAIN_CACHE.get_or_set(
         key,
-        lambda: _yf_call(lambda: yf.Ticker(ticker, session=SHARED_YF_SESSION).option_chain(expiry)),
-        ttl_sec=600,  # 10 min — prevents repeated Yahoo hits on same ticker/expiry
+        lambda: yf.Ticker(ticker).option_chain(expiry),
+        ttl_sec=45,
     )
 
 
@@ -1875,12 +1834,8 @@ def report(
     alpha_regime = classify_alpha_regime(alpha_snapshot)
 
 
-    t = yf.Ticker(ticker, session=SHARED_YF_SESSION)
-    hist = COMPANY_CACHE.get_or_set(
-        f"hist:{ticker}:1y",
-        lambda: _yf_call(lambda: t.history(period="1y")),
-        ttl_sec=1800,  # 30 min — price history doesn't need constant refresh
-    )
+    t = yf.Ticker(ticker)
+    hist = t.history(period="1y")
 
     auto_info = None  # must exist for early returns
 
@@ -2510,11 +2465,7 @@ def report(
 
         # --- Qualitative Proxies (computed once before confidence) ---
         try:
-            yf_info_for_proxy = COMPANY_CACHE.get_or_set(
-                f"yfinfo:{ticker}",
-                lambda: (_yf_call(lambda: yf.Ticker(ticker, session=SHARED_YF_SESSION).info) or {}),
-                ttl_sec=6 * 3600,
-            ) or {}
+            yf_info_for_proxy = getattr(yf.Ticker(ticker), 'info', None) or {}
         except Exception:
             yf_info_for_proxy = {}
         try:
@@ -3745,9 +3696,9 @@ def report(
         # Get company info for Gemini
         company = COMPANY_CACHE.get_or_set(
             f"company:{ticker}",
-            lambda: get_company_snapshot(yf.Ticker(ticker, session=SHARED_YF_SESSION)),
+            lambda: get_company_snapshot(yf.Ticker(ticker)),
             ttl_sec=12 * 3600,
-        ) or {}  # guard: get_company_snapshot can return None on rate-limit
+        )
 
         ai = compute_confidence_with_ai(
             ticker=ticker,
@@ -3802,11 +3753,7 @@ def report(
 
     # --- Qualitative Proxies (options mode) ---
     try:
-        yf_info_opts = COMPANY_CACHE.get_or_set(
-                f"yfinfo:{ticker}",
-                lambda: (_yf_call(lambda: yf.Ticker(ticker, session=SHARED_YF_SESSION).info) or {}),
-                ttl_sec=6 * 3600,
-            ) or {}
+        yf_info_opts = getattr(yf.Ticker(ticker), 'info', None) or {}
     except Exception:
         yf_info_opts = {}
     try:
@@ -5296,12 +5243,9 @@ def semis_expiries(
     horizon: str | None = Query(default=None, description="short/swing/long"),
 ):
     ticker = ticker.strip().upper()
-    t = yf.Ticker(ticker, session=SHARED_YF_SESSION)
+    t = yf.Ticker(ticker)
 
-    try:
-        expiries = list(t.options or [])
-    except Exception:
-        expiries = []
+    expiries = list(t.options or [])
     out = [{"expiry": e, "dte": _days_to_exp(e)} for e in expiries]
     out.sort(key=lambda x: x["dte"])
 
