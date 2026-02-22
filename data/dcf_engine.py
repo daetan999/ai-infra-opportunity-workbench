@@ -12,8 +12,28 @@
 # Author: Built for institutional-grade personal trading system
 # Date: 2026-02-14 (View-aware update)
 
+import time as _time
 import yfinance as yf
 import numpy as np
+
+try:
+    from data.cache import COMPANY_CACHE as _DCF_CACHE
+except ImportError:
+    _DCF_CACHE = None
+
+def _yf_call_dcf(fn, retries: int = 3, base_delay: float = 2.0):
+    """429-backoff wrapper for dcf_engine yfinance calls."""
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:
+            msg = str(exc).lower()
+            is_rl = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
+            if is_rl and attempt < retries - 1:
+                _time.sleep(base_delay * (2 ** attempt))
+            else:
+                return None
+    return None
 import pandas as pd
 from typing import Optional, Dict, Tuple, List
 
@@ -351,10 +371,10 @@ def build_dcf(ticker: str, spot: float, rf: float = 0.04, sector_bucket: Optiona
     """
     
     t = yf.Ticker(ticker)
-    info = t.info or {}
-    fin = t.financials
-    cf = t.cashflow
-    bs = t.balance_sheet
+    info = _yf_call_dcf(lambda: t.info) or {}
+    fin  = _yf_call_dcf(lambda: t.financials)
+    cf   = _yf_call_dcf(lambda: t.cashflow)
+    bs   = _yf_call_dcf(lambda: t.balance_sheet)
     
     # Normalize view
     view = view.lower() if view else "neutral"
@@ -696,3 +716,24 @@ def build_dcf(ticker: str, spot: float, rf: float = 0.04, sector_bucket: Optiona
 def build_dcf_v2(*args, **kwargs):
     """Alias for build_dcf (backward compatibility)."""
     return build_dcf(*args, **kwargs)
+
+
+_ORIGINAL_BUILD_DCF = build_dcf
+
+
+def build_dcf(ticker: str, spot: float, rf: float = 0.04,
+              sector_bucket=None, view: str = "neutral") -> dict:
+    """
+    Cached wrapper around the original build_dcf.
+    TTL 12h — financial statements don't change intraday.
+    Falls back to uncached call if cache unavailable.
+    """
+    cache_key = f"dcf:{ticker}:{view}"
+    if _DCF_CACHE is not None:
+        result = _DCF_CACHE.get_or_set(
+            cache_key,
+            lambda: _ORIGINAL_BUILD_DCF(ticker, spot, rf, sector_bucket, view),
+            ttl_sec=12 * 3600,
+        )
+        return result if result is not None else _ORIGINAL_BUILD_DCF(ticker, spot, rf, sector_bucket, view)
+    return _ORIGINAL_BUILD_DCF(ticker, spot, rf, sector_bucket, view)

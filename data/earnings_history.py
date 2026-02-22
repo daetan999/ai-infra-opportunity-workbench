@@ -3,7 +3,27 @@
 # NEW: Revenue estimates, improved guidance, full peer data, working headlines!
 
 from __future__ import annotations
+import time as _time
 import yfinance as yf
+
+try:
+    from data.cache import COMPANY_CACHE as _HIST_CACHE
+except ImportError:
+    _HIST_CACHE = None
+
+def _yf_call_eh(fn, retries: int = 3, base_delay: float = 2.0):
+    """429-backoff wrapper for earnings_history yfinance calls."""
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:
+            msg = str(exc).lower()
+            is_rl = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
+            if is_rl and attempt < retries - 1:
+                _time.sleep(base_delay * (2 ** attempt))
+            else:
+                return None
+    return None
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 import pandas as pd
@@ -800,9 +820,16 @@ def _get_peer_earnings_enhanced(
             price_reaction = None
             price_change_1d = None
             try:
-                peer_t = yf.Ticker(peer_ticker)
-                peer_hist = peer_t.history(period="3mo")
-                if not peer_hist.empty:
+                _hist_key = f"hist:{peer_ticker}:3mo"
+                if _HIST_CACHE is not None:
+                    peer_hist = _HIST_CACHE.get_or_set(
+                        _hist_key,
+                        lambda _pt=peer_ticker: _yf_call_eh(lambda: yf.Ticker(_pt).history(period="3mo")),
+                        ttl_sec=6 * 3600,  # 6h — peer price history for earnings reactions
+                    )
+                else:
+                    peer_hist = _yf_call_eh(lambda: yf.Ticker(peer_ticker).history(period="3mo"))
+                if peer_hist is not None and not peer_hist.empty:
                     price_reaction = _calculate_price_reaction(peer_hist, best_match["date"])
                     if price_reaction:
                         price_change_1d = price_reaction.get("change_1d_pct", 0)

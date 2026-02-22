@@ -1,8 +1,28 @@
 import math
+import time as _time
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
 import yfinance as yf
+
+try:
+    from data.cache import COMPANY_CACHE as _IV_CACHE
+except ImportError:
+    _IV_CACHE = None
+
+def _yf_call_iv(fn, retries: int = 3, base_delay: float = 2.0):
+    """429-backoff wrapper for iv_rank yfinance calls."""
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:
+            msg = str(exc).lower()
+            is_rl = any(k in msg for k in ("too many requests", "rate limit", "429", "rateerror"))
+            if is_rl and attempt < retries - 1:
+                _time.sleep(base_delay * (2 ** attempt))
+            else:
+                return None
+    return None
 
 
 @dataclass
@@ -44,7 +64,15 @@ def compute_iv_rank(
 
     try:
         t = yf.Ticker(ticker)
-        hist = t.history(period="2y", interval="1d", auto_adjust=False)
+        _iv_key = f"hist:{ticker}:2y:1d"
+        if _IV_CACHE is not None:
+            hist = _IV_CACHE.get_or_set(
+                _iv_key,
+                lambda: _yf_call_iv(lambda: t.history(period="2y", interval="1d", auto_adjust=False)),
+                ttl_sec=12 * 3600,  # 12h — IV history doesn't need frequent refresh
+            )
+        else:
+            hist = _yf_call_iv(lambda: t.history(period="2y", interval="1d", auto_adjust=False))
         if hist is None or hist.empty:
             return IVRankResult(current_atm_iv, None, None, lookback_days, 0, "No price history returned.")
 
