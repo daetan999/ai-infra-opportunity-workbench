@@ -207,4 +207,13 @@
     border-color: #d8dfe6;
   }
 
-  .lead
+  .lead-copy,
+  .intro-copy,
+  .surface-heading p:not(.eyebrow),
+  dd,
+  .timeline p,
+  .question-list p,
+  .action-callout {
+    color: #293847;
+  }
+}
