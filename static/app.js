@@ -1,77 +1,81 @@
-const form = document.querySelector('#analysis-form');
-const button = document.querySelector('#submit-button');
-const emptyState = document.querySelector('#empty-state');
-const loadingState = document.querySelector('#loading-state');
-const errorState = document.querySelector('#error-state');
-const results = document.querySelector('#results');
+const body = document.body;
+const sidebar = document.querySelector('#sidebar');
+const sidebarToggle = document.querySelector('[data-sidebar-toggle]');
+const sidebarScrim = document.querySelector('[data-sidebar-scrim]');
 
-const escapeHtml = (value) => String(value ?? '')
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;')
-  .replaceAll("'", '&#039;');
+function setSidebarOpen(isOpen) {
+  if (!sidebar || !sidebarToggle || !sidebarScrim) return;
 
-const chips = (items) => `<div class="chips">${items.map(item => `<span class="chip">${escapeHtml(item)}</span>`).join('')}</div>`;
-const list = (items, ordered = false) => `<${ordered ? 'ol' : 'ul'} class="clean">${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</${ordered ? 'ol' : 'ul'}>`;
+  body.classList.toggle('sidebar-open', isOpen);
+  sidebarToggle.setAttribute('aria-expanded', String(isOpen));
+  sidebarScrim.hidden = !isOpen;
 
-function render(data) {
-  const account = data.account;
-  const hypotheses = data.ai_enrichment?.refined_opportunity_hypotheses || data.opportunity_hypotheses;
-  const questions = data.ai_enrichment?.priority_discovery_questions || data.discovery_questions;
-  const summary = data.ai_enrichment?.executive_summary || data.commercial_thesis;
-
-  results.innerHTML = `
-    <div class="result-header">
-      <p class="eyebrow">${escapeHtml(data.solution_motion)}</p>
-      <h3>${escapeHtml(account.name)} <small>${escapeHtml(account.ticker)}</small></h3>
-      <p>${escapeHtml(account.role)} · ${escapeHtml(account.customer_segment)} · ${escapeHtml(account.region)}</p>
-    </div>
-    <section class="result-section"><h4>Commercial thesis</h4><p>${escapeHtml(summary)}</p></section>
-    <section class="result-section"><h4>Account signals</h4>${chips(data.account_snapshot.commercial_signals)}</section>
-    <section class="result-section"><h4>Priority workloads</h4>${chips(data.account_snapshot.priority_workloads)}</section>
-    <section class="result-section"><h4>Opportunity hypotheses</h4><div class="card-grid">${hypotheses.map(h => `
-      <article class="mini-card"><strong>${escapeHtml(h.business_pressure)}</strong><p>${escapeHtml(h.technical_hypothesis)}</p><span>${escapeHtml(h.solution_angle)}<br><b>Measure:</b> ${escapeHtml(h.success_metric)}</span></article>`).join('')}</div></section>
-    <section class="result-section"><h4>Stakeholder map</h4><div class="card-grid">${data.stakeholder_map.map(s => `<article class="mini-card"><strong>${escapeHtml(s.role)} — ${escapeHtml(s.persona)}</strong><p>${escapeHtml(s.priority)}</p></article>`).join('')}</div></section>
-    <section class="result-section"><h4>Discovery questions</h4>${list(questions, true)}</section>
-    <section class="result-section"><h4>PoC acceptance criteria</h4>${list(data.poc_plan.acceptance_criteria)}<p class="provenance">Expected duration: ${escapeHtml(data.poc_plan.duration)} · Evidence: ${escapeHtml(data.poc_plan.evidence.join(', '))}</p></section>
-    <section class="result-section"><h4>Objection map</h4><div class="card-grid">${data.objection_map.map(o => `<article class="mini-card"><strong>${escapeHtml(o.objection)}</strong><p>${escapeHtml(o.response)}</p></article>`).join('')}</div></section>
-    <section class="result-section"><h4>Next actions</h4>${list(data.next_actions, true)}</section>
-    <section class="result-section provenance"><h4>Provenance</h4><p>${escapeHtml(data.provenance.mode)} · ${escapeHtml(data.provenance.source)}</p><p>${escapeHtml(data.provenance.limitations)}</p></section>`;
+  if (isOpen) {
+    sidebar.querySelector('a')?.focus();
+  } else {
+    sidebarToggle.focus();
+  }
 }
 
-form.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  button.disabled = true;
-  emptyState.classList.add('hidden');
-  results.classList.add('hidden');
-  errorState.classList.add('hidden');
-  loadingState.classList.remove('hidden');
+sidebarToggle?.addEventListener('click', () => {
+  setSidebarOpen(!body.classList.contains('sidebar-open'));
+});
 
-  const payload = {
-    ticker: document.querySelector('#ticker').value,
-    solution_motion: document.querySelector('#solution_motion').value,
-    customer_segment: document.querySelector('#customer_segment').value,
-    region: document.querySelector('#region').value,
-    context: document.querySelector('#context').value,
-    use_ai: document.querySelector('#use_ai').checked,
-  };
+sidebarScrim?.addEventListener('click', () => setSidebarOpen(false));
 
-  try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload),
-    });
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.detail || 'Analysis failed.');
-    render(body);
-    results.classList.remove('hidden');
-  } catch (error) {
-    errorState.textContent = error.message;
-    errorState.classList.remove('hidden');
-  } finally {
-    loadingState.classList.add('hidden');
-    button.disabled = false;
+sidebar?.addEventListener('click', (event) => {
+  if (event.target.closest('a') && window.matchMedia('(max-width: 900px)').matches) {
+    setSidebarOpen(false);
   }
 });
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && body.classList.contains('sidebar-open')) {
+    setSidebarOpen(false);
+  }
+});
+
+const search = document.querySelector('[data-account-search]');
+const accountRows = [...document.querySelectorAll('[data-account-row]')];
+const filterEmpty = document.querySelector('[data-filter-empty]');
+
+search?.addEventListener('input', () => {
+  const query = search.value.trim().toLocaleLowerCase();
+  let visibleCount = 0;
+
+  accountRows.forEach((row) => {
+    const matches = row.dataset.searchValue.toLocaleLowerCase().includes(query);
+    row.hidden = !matches;
+    visibleCount += Number(matches);
+  });
+
+  filterEmpty?.classList.toggle('hidden', visibleCount !== 0 || accountRows.length === 0);
+});
+
+document.querySelectorAll('[data-print]').forEach((button) => {
+  button.addEventListener('click', () => window.print());
+});
+
+const sectionLinks = [...document.querySelectorAll('.nav-link[href^="#"]')];
+const observedSections = sectionLinks
+  .map((link) => document.querySelector(link.getAttribute('href')))
+  .filter(Boolean);
+
+if ('IntersectionObserver' in window && observedSections.length > 0) {
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries
+      .filter((entry) => entry.isIntersecting)
+      .sort((left, right) => right.intersectionRatio - left.intersectionRatio)[0];
+
+    if (!visible) return;
+
+    sectionLinks.forEach((link) => {
+      const isCurrent = link.getAttribute('href') === `#${visible.target.id}`;
+      link.classList.toggle('is-active', isCurrent);
+      if (isCurrent) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    });
+  }, { rootMargin: '-18% 0px -68%', threshold: [0, 0.2, 0.5] });
+
+  observedSections.forEach((section) => observer.observe(section));
+}
