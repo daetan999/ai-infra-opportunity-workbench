@@ -2,7 +2,7 @@
 
 ## System intent
 
-The Opportunity Qualification & Discovery Workbench is a local-first reference application for turning AI-infrastructure discovery evidence into an explicit deal recommendation. The score is a policy decision implemented in the domain layer, not an AI prediction and not a forecast.
+The AI Infrastructure Opportunity & Discovery Workbench is a local-first reference application for turning AI-infrastructure discovery evidence into an explicit deal recommendation. The score is a policy decision implemented in the domain layer, not an AI prediction and not a forecast.
 
 ## Components
 
@@ -104,6 +104,7 @@ Recommendation thresholds are policy outputs:
 
 - **Advance** — sufficient verified evidence and no blocking cap;
 - **Reshape** — a plausible opportunity with material evidence or stakeholder gaps;
+- **Nurture** — insufficient urgency or access today, with a dated learning plan for reassessment;
 - **Disqualify** — weak fit/evidence or a blocking risk that should not consume further pursuit effort.
 
 ## Data controls

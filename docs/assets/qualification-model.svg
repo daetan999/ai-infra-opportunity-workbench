@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
   <title>Qualification model</title>
-  <desc>An evidence-based qualification model with five equally weighted dimensions, explicit evidence standards, risk flags, and readiness gates for proof-of-concept decisions.</desc>
+  <desc>An evidence-based qualification model with ten weighted score areas summarized through five evaluation lenses, explicit evidence standards, risk flags, and four transparent recommendations.</desc>
   <defs>
     <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
       <stop stop-color="#08111d"/>
@@ -26,7 +26,7 @@
   <circle cx="1260" cy="70" r="290" fill="#31586e" opacity=".12"/>
   <text x="74" y="79" class="eyebrow">EVIDENCE-BASED OPPORTUNITY CONTROL</text>
   <text x="74" y="134" class="heading">Qualification model</text>
-  <text x="74" y="172" class="intro">Five dimensions · 20 points each · unknowns score zero until evidence exists</text>
+  <text x="74" y="172" class="intro">Ten score areas · deterministic weights · unknowns score zero until evidence exists</text>
 
   <g>
     <rect x="74" y="224" width="236" height="284" rx="15" fill="url(#panel)" stroke="#30445a"/>
@@ -92,24 +92,25 @@
 
   <rect x="74" y="547" width="1252" height="184" rx="15" fill="#0b1622" stroke="#26364a"/>
   <text x="101" y="582" class="label">READINESS INTERPRETATION</text>
-  <rect x="101" y="608" width="252" height="85" rx="10" fill="#10252b" stroke="#397467"/>
+  <rect x="101" y="608" width="280" height="85" rx="10" fill="#10252b" stroke="#397467"/>
   <circle cx="126" cy="635" r="6" fill="#65d6a1"/>
-  <text x="145" y="641" fill="#65d6a1" font-size="15" font-weight="800">Ready to evaluate</text>
-  <text x="126" y="672" class="small">Bounded scope and decision gate</text>
+  <text x="145" y="641" fill="#65d6a1" font-size="15" font-weight="800">Advance</text>
+  <text x="126" y="672" class="small">Verified evidence and no blocking cap</text>
 
-  <rect x="372" y="608" width="252" height="85" rx="10" fill="#2a251b" stroke="#6d5935"/>
-  <circle cx="397" cy="635" r="6" fill="#f4c56b"/>
-  <text x="416" y="641" fill="#f4c56b" font-size="15" font-weight="800">Developing</text>
-  <text x="397" y="672" class="small">Resolve named evidence gaps</text>
+  <rect x="398" y="608" width="280" height="85" rx="10" fill="#2a251b" stroke="#6d5935"/>
+  <circle cx="423" cy="635" r="6" fill="#f4c56b"/>
+  <text x="442" y="641" fill="#f4c56b" font-size="15" font-weight="800">Reshape</text>
+  <text x="423" y="672" class="small">Resolve named evidence or role gaps</text>
 
-  <rect x="643" y="608" width="252" height="85" rx="10" fill="#2a1d24" stroke="#70404a"/>
-  <circle cx="668" cy="635" r="6" fill="#ff8b91"/>
-  <text x="687" y="641" fill="#ff8b91" font-size="15" font-weight="800">Blocked</text>
-  <text x="668" y="672" class="small">Critical owner or value gap</text>
+  <rect x="695" y="608" width="280" height="85" rx="10" fill="#172332" stroke="#405670"/>
+  <circle cx="720" cy="635" r="6" fill="#7fb6ff"/>
+  <text x="739" y="641" fill="#7fb6ff" font-size="15" font-weight="800">Nurture</text>
+  <text x="720" y="672" class="small">Use a dated learning and access plan</text>
 
-  <rect x="914" y="608" width="385" height="85" rx="10" fill="#131f2d" stroke="#30445a"/>
-  <text x="940" y="639" class="label">SCORE IS NOT</text>
-  <text x="940" y="671" fill="#c8d4df" font-size="15" font-weight="700">Forecast probability or activity count</text>
+  <rect x="992" y="608" width="307" height="85" rx="10" fill="#2a1d24" stroke="#70404a"/>
+  <circle cx="1017" cy="635" r="6" fill="#ff8b91"/>
+  <text x="1036" y="641" fill="#ff8b91" font-size="15" font-weight="800">Disqualify</text>
+  <text x="1017" y="672" class="small">Weak fit or a blocking risk</text>
 
   <text x="74" y="781" fill="#657589" font-size="13">Scoring reflects qualification completeness only · synthetic framework · no outcome claims</text>
 </svg>

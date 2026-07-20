@@ -1,4 +1,4 @@
-# AI Infrastructure Opportunity Qualification & Discovery Workbench
+# AI Infrastructure Opportunity & Discovery Workbench
 
 [![CI](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -8,7 +8,7 @@
 
 ![Opportunity Workbench hero](docs/assets/opportunity-workbench-hero.svg)
 
-A runnable deal-qualification workspace for complex AI-infrastructure opportunities. It turns discovery evidence into a transparent qualification score, an explicit advance/reshape/disqualify recommendation, and a bounded proof-of-concept handoff.
+A runnable deal-qualification workspace for complex AI-infrastructure opportunities. It turns discovery evidence into a transparent qualification score, an explicit advance/reshape/nurture/disqualify recommendation, and a bounded proof-of-concept handoff.
 
 This is a portfolio implementation built with synthetic scenarios. It demonstrates the technical and commercial reasoning used to qualify accelerator, networking, capacity, and AI-platform opportunities without representing real customers, deployments, revenue, or pipeline.
 
@@ -37,7 +37,7 @@ Each account workspace keeps signals, workload hypotheses, stakeholders, discove
 5. **Capture discovery evidence** — organize findings around pain, urgency, metrics, decision process, and competition.
 6. **Qualify transparently** — calculate a deterministic score with visible dimension-level evidence and caps.
 7. **Control the PoC** — convert a qualified hypothesis into acceptance criteria, evidence owners, dates, and rollback conditions.
-8. **Choose the next action** — advance, reshape, or disqualify based on evidence rather than narrative optimism.
+8. **Choose the next action** — advance, reshape, nurture, or disqualify based on evidence rather than narrative optimism.
 
 ## Qualification model
 
@@ -66,7 +66,7 @@ flowchart LR
     REPO --> DB[("SQLite")]
     API --> MAP["Evidence-to-score mapper"]
     MAP --> SCORE["Deterministic qualification engine"]
-    SCORE --> DECISION["Advance · Reshape · Disqualify"]
+    SCORE --> DECISION["Advance · Reshape · Nurture · Disqualify"]
     API --> EXPORT["Markdown + JSON handoff"]
     API -. optional .-> NARRATIVE["Guarded narrative adapter"]
 ```
