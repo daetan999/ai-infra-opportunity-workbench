@@ -7,7 +7,7 @@
 
 A sanitized, runnable account-planning application for AI-infrastructure solution selling. It converts a selected company, solution motion, customer segment, and account context into a structured commercial and technical brief.
 
-The project is deliberately not a stock-picking or options-trading application. Its primary outputs are the artifacts used to qualify and advance an infrastructure opportunity:
+The projects primary outputs are the artifacts used to qualify and advance an infrastructure opportunity:
 
 - Account and workload hypotheses
 - Economic and technical buyer map
