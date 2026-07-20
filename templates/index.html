@@ -9,6 +9,7 @@
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/static/styles.css">
   <link rel="stylesheet" href="/static/workspace.css">
+  <link rel="stylesheet" href="/static/forms.css">
   <link rel="stylesheet" href="/static/responsive.css">
 </head>
 {% set accounts = accounts | default([], true) %}
@@ -19,7 +20,7 @@
 {% set signals = signals | default([], true) %}
 {% set stakeholders = stakeholders | default([], true) %}
 {% set discoveries = discoveries | default([], true) %}
-<body>
+<body data-account-id="{{ account.get('id', '') }}">
   <a class="skip-link" href="#main-content">Skip to workbench</a>
 
   <div class="app-shell">
@@ -61,7 +62,7 @@
         </div>
         <div class="topbar-actions">
           <span class="privacy-label"><span class="status-dot" aria-hidden="true"></span> Sanitized data</span>
-          <button class="secondary-button compact" type="button" data-print>Export brief</button>
+          <a class="secondary-button compact" href="{{ '/api/accounts/' ~ account.get('id') ~ '/export?format=markdown' if account.get('id') else '#decision' }}" data-export-format="markdown" {% if not account.get('id') %}aria-disabled="true"{% endif %}>Export brief</a>
         </div>
       </header>
 
@@ -108,11 +109,14 @@
               <h2 id="portfolio-title">Account portfolio</h2>
               <p>Prioritize by evidence quality and next-step clarity—not activity volume.</p>
             </div>
-            <label class="search-field" for="account-search">
-              <span class="sr-only">Filter accounts</span>
-              <span aria-hidden="true">⌕</span>
-              <input id="account-search" type="search" placeholder="Filter accounts" autocomplete="off" data-account-search>
-            </label>
+            <div class="surface-actions">
+              <button class="primary-button compact" type="button" data-open-workflow="account">New account</button>
+              <label class="search-field" for="account-search">
+                <span class="sr-only">Filter accounts</span>
+                <span aria-hidden="true">⌕</span>
+                <input id="account-search" type="search" placeholder="Filter accounts" autocomplete="off" data-account-search>
+              </label>
+            </div>
           </div>
 
           <div class="table-wrap">
@@ -158,7 +162,10 @@
             <section class="surface" aria-labelledby="hypothesis-title">
               <div class="surface-heading compact-heading">
                 <div><p class="eyebrow">Problem framing</p><h2 id="hypothesis-title">Workload hypothesis</h2></div>
-                <span class="pill {{ 'success' if account.get('hypothesis_status') == 'Validated' else 'warning' }}">{{ account.get('hypothesis_status', 'Needs validation') }}</span>
+                <div class="heading-actions">
+                  <span class="pill {{ 'success' if account.get('hypothesis_status') == 'Validated' else 'warning' }}">{{ account.get('hypothesis_status', 'Needs validation') }}</span>
+                  <button class="secondary-button compact inline-action" type="button" data-open-workflow="workload" {% if not account.get('id') %}disabled aria-disabled="true"{% endif %}>Define workload</button>
+                </div>
               </div>
               <p class="lead-copy">{{ account.get('workload_hypothesis', 'Capture a falsifiable workload hypothesis before proposing an architecture.') }}</p>
               <dl class="detail-grid">
@@ -183,7 +190,10 @@
             <section class="surface" id="evidence" aria-labelledby="signals-title">
               <div class="surface-heading compact-heading">
                 <div><p class="eyebrow">Evidence ledger</p><h2 id="signals-title">Signal timeline</h2></div>
-                <span class="surface-count">{{ signals | length }} signals</span>
+                <div class="heading-actions">
+                  <span class="surface-count">{{ signals | length }} signals</span>
+                  <button class="secondary-button compact inline-action" type="button" data-open-workflow="signal" {% if not account.get('id') %}disabled aria-disabled="true"{% endif %}>Add signal</button>
+                </div>
               </div>
               <ol class="timeline">
                 {% for signal in signals %}
@@ -203,7 +213,10 @@
             <section class="surface" aria-labelledby="buying-group-title">
               <div class="surface-heading compact-heading">
                 <div><p class="eyebrow">Stakeholder coverage</p><h2 id="buying-group-title">Buying group</h2></div>
-                <span class="surface-count">{{ stakeholders | length }} mapped</span>
+                <div class="heading-actions">
+                  <span class="surface-count">{{ stakeholders | length }} mapped</span>
+                  <button class="secondary-button compact inline-action" type="button" data-open-workflow="stakeholder" {% if not account.get('id') %}disabled aria-disabled="true"{% endif %}>Add stakeholder</button>
+                </div>
               </div>
               <div class="stakeholder-grid">
                 {% for stakeholder in stakeholders %}
@@ -220,7 +233,10 @@
             </section>
 
             <section class="surface" aria-labelledby="discovery-title">
-              <div class="surface-heading compact-heading"><div><p class="eyebrow">Customer validation</p><h2 id="discovery-title">Priority discovery questions</h2></div></div>
+              <div class="surface-heading compact-heading">
+                <div><p class="eyebrow">Customer validation</p><h2 id="discovery-title">Priority discovery questions</h2></div>
+                <button class="secondary-button compact inline-action" type="button" data-open-workflow="discovery" {% if not account.get('id') %}disabled aria-disabled="true"{% endif %}>Add discovery</button>
+              </div>
               <ol class="question-list">
                 {% for question in questions %}
                 <li><span>{{ "%02d" | format(loop.index) }}</span><p>{{ question.get('question', question) if question is mapping else question }}</p></li>
@@ -233,7 +249,10 @@
 
           <aside class="workspace-rail" id="decision" aria-label="Opportunity decision support">
             <section class="surface decision-card" aria-labelledby="scorecard-title">
-              <div class="surface-heading compact-heading"><div><p class="eyebrow">Decision quality</p><h2 id="scorecard-title">Qualification scorecard</h2></div></div>
+              <div class="surface-heading compact-heading">
+                <div><p class="eyebrow">Decision quality</p><h2 id="scorecard-title">Qualification scorecard</h2></div>
+                <button class="secondary-button compact inline-action" type="button" data-run-qualification {% if not account.get('id') %}disabled aria-disabled="true"{% endif %}>Run qualification</button>
+              </div>
               <div class="score-hero">
                 <div class="score-ring" style="--score: {{ score.get('overall', 0) }}" aria-label="Qualification score {{ score.get('overall', 0) }} out of 100"><strong>{{ score.get('overall', '—') }}</strong><span>/100</span></div>
                 <div><span class="pill {{ 'success' if score.get('status') == 'Qualified' else 'warning' }}">{{ score.get('label', score.get('status', 'Not scored')) }}</span><p>{{ score.get('summary', 'Score only verified evidence; leave unknowns visible.') }}</p></div>
@@ -245,6 +264,7 @@
                 <p class="empty-copy">No qualification dimensions have been scored.</p>
                 {% endfor %}
               </div>
+              <p class="action-status" data-qualification-status role="status" aria-live="polite"></p>
             </section>
 
             <section class="surface" aria-labelledby="risk-title">
@@ -278,7 +298,12 @@
 
             <section class="surface export-card" aria-labelledby="export-title">
               <div><p class="eyebrow">Handoff</p><h2 id="export-title">Export brief</h2><p>Create a print-ready record of the evidence, open questions, score, risks, and agreed next step.</p></div>
-              <button class="primary-button" type="button" data-print>Print / save as PDF</button>
+              <div class="export-actions">
+                <a class="primary-button" href="{{ '/api/accounts/' ~ account.get('id') ~ '/export?format=markdown' if account.get('id') else '#decision' }}" data-export-format="markdown" {% if not account.get('id') %}aria-disabled="true"{% endif %}>Download Markdown</a>
+                <a class="secondary-button" href="{{ '/api/accounts/' ~ account.get('id') ~ '/export?format=json' if account.get('id') else '#decision' }}" data-export-format="json" {% if not account.get('id') %}aria-disabled="true"{% endif %}>Download JSON</a>
+                <button class="secondary-button" type="button" data-print>Print / save as PDF</button>
+              </div>
+              <p class="action-status" data-export-status role="status" aria-live="polite"></p>
               <small>No customer-confidential content should be added to this public demonstration.</small>
             </section>
           </aside>
@@ -291,6 +316,235 @@
       </main>
     </div>
   </div>
+
+  <dialog class="workflow-dialog" data-workflow-dialog aria-labelledby="workflow-dialog-title">
+    <div class="dialog-shell">
+      <header class="dialog-header">
+        <div>
+          <p class="eyebrow">Opportunity workflow</p>
+          <h2 id="workflow-dialog-title" data-workflow-title>Create account</h2>
+          <p data-workflow-description>Add a governed portfolio record before capturing opportunity evidence.</p>
+        </div>
+        <button class="icon-button" type="button" data-dialog-close aria-label="Close workflow panel">×</button>
+      </header>
+
+      <form id="account-form" class="workflow-form" data-workflow-form="account" hidden>
+        <div class="form-grid">
+          <label class="form-field full-span">Account name
+            <input name="name" type="text" minlength="2" maxlength="200" autocomplete="organization" required>
+          </label>
+          <label class="form-field">Industry
+            <input name="industry" type="text" minlength="2" maxlength="120" autocomplete="organization-title" required>
+          </label>
+          <label class="form-field">Geography
+            <input name="geography" type="text" minlength="2" maxlength="120" autocomplete="country-name" required>
+          </label>
+          <label class="form-field full-span">Segment
+            <input name="segment" type="text" minlength="2" maxlength="120" placeholder="For example: Enterprise" required>
+          </label>
+          <label class="check-field full-span">
+            <input name="fictional" type="checkbox" value="true" checked>
+            <span><strong>Fictional demonstration account</strong><small>Keep this selected for synthetic portfolio records.</small></span>
+          </label>
+        </div>
+        <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        <footer class="form-actions">
+          <button class="secondary-button" type="button" data-dialog-close>Cancel</button>
+          <button class="primary-button" type="submit">Create account</button>
+        </footer>
+      </form>
+
+      <form id="signal-form" class="workflow-form" data-workflow-form="signal" hidden>
+        <div class="form-grid">
+          <label class="form-field full-span">Signal summary
+            <textarea name="summary" minlength="3" maxlength="2000" placeholder="Describe only what the evidence supports." required></textarea>
+          </label>
+          <label class="form-field">Evidence label
+            <select name="evidence_type" required>
+              <option value="verified_fact">Verified fact</option>
+              <option value="user_provided">User provided</option>
+              <option value="hypothesis">Hypothesis</option>
+              <option value="generated_suggestion">Generated suggestion</option>
+            </select>
+          </label>
+          <label class="form-field">Confidence
+            <select name="confidence" data-number required>
+              <option value="0.25">Low · 25%</option>
+              <option value="0.5" selected>Medium · 50%</option>
+              <option value="0.75">High · 75%</option>
+              <option value="1">Confirmed · 100%</option>
+            </select>
+          </label>
+          <label class="form-field">Source label
+            <input name="source" type="text" minlength="2" maxlength="1000" placeholder="For example: Discovery call note" required>
+          </label>
+          <label class="form-field">Source date
+            <input name="source_date" type="date" required>
+          </label>
+          <label class="form-field full-span">Source URL <small>Optional; use an attributable public or approved internal reference.</small>
+            <input name="source_url" type="url" maxlength="2000" placeholder="Optional evidence URL">
+          </label>
+          <label class="form-field full-span">Notes <small>Optional context that should not be treated as scored evidence.</small>
+            <textarea name="notes" maxlength="4000"></textarea>
+          </label>
+        </div>
+        <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        <footer class="form-actions">
+          <button class="secondary-button" type="button" data-dialog-close>Cancel</button>
+          <button class="primary-button" type="submit">Add signal</button>
+        </footer>
+      </form>
+
+      <form id="workload-form" class="workflow-form" data-workflow-form="workload" hidden>
+        <div class="form-grid">
+          <label class="form-field full-span">Workload name
+            <input name="name" type="text" minlength="3" maxlength="240" placeholder="Private RAG inference" required>
+          </label>
+          <label class="form-field">Workload type
+            <select name="workload_type" required>
+              <option value="rag_inference">RAG inference</option>
+              <option value="model_training">Model training</option>
+              <option value="batch_inference">Batch inference</option>
+              <option value="multimodal_search">Multimodal search</option>
+              <option value="capacity_expansion">Capacity expansion</option>
+            </select>
+          </label>
+          <label class="form-field">Deployment pattern
+            <input name="deployment_pattern" type="text" maxlength="120" placeholder="Private cloud, hybrid, managed service">
+          </label>
+          <label class="form-field full-span">Hypothesis
+            <textarea name="description" minlength="3" maxlength="4000" placeholder="State the workload, constraint, and expected architecture decision." required></textarea>
+          </label>
+          <label class="form-field">Business metric
+            <input name="business_metric" type="text" minlength="2" maxlength="240" placeholder="Cost per response or queue time" required>
+          </label>
+          <label class="form-field">Confidence
+            <select name="confidence" data-number required>
+              <option value="0.25">Low · 25%</option>
+              <option value="0.5" selected>Medium · 50%</option>
+              <option value="0.75">High · 75%</option>
+              <option value="1">Confirmed · 100%</option>
+            </select>
+          </label>
+          <label class="form-field full-span">Success metrics
+            <textarea name="success_metrics" minlength="3" maxlength="2000" placeholder="Define measurable acceptance criteria." required></textarea>
+          </label>
+          <label class="form-field full-span">Technical requirements
+            <textarea name="technical_requirements" minlength="3" maxlength="2000" placeholder="Capture latency, capacity, security, data, or integration constraints." required></textarea>
+          </label>
+        </div>
+        <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        <footer class="form-actions">
+          <button class="secondary-button" type="button" data-dialog-close>Cancel</button>
+          <button class="primary-button" type="submit">Save workload</button>
+        </footer>
+      </form>
+
+      <form id="stakeholder-form" class="workflow-form" data-workflow-form="stakeholder" hidden>
+        <div class="form-grid">
+          <label class="form-field">Name
+            <input name="name" type="text" minlength="2" maxlength="200" required>
+          </label>
+          <label class="form-field">Title
+            <input name="title" type="text" minlength="2" maxlength="200" required>
+          </label>
+          <label class="form-field">Decision role
+            <select name="role" required>
+              <option value="champion">Champion</option>
+              <option value="economic_buyer">Economic buyer</option>
+              <option value="executive_sponsor">Executive sponsor</option>
+              <option value="technical_buyer">Technical buyer</option>
+              <option value="procurement">Procurement</option>
+              <option value="security">Security</option>
+              <option value="operations">Operations</option>
+            </select>
+          </label>
+          <label class="form-field">Engagement
+            <select name="engagement_status" required>
+              <option value="unknown">Unknown</option>
+              <option value="identified">Identified</option>
+              <option value="engaged" selected>Engaged</option>
+              <option value="confirmed">Confirmed</option>
+            </select>
+          </label>
+          <label class="form-field full-span">Confidence
+            <select name="confidence" data-number required>
+              <option value="0.25">Low · 25%</option>
+              <option value="0.5" selected>Medium · 50%</option>
+              <option value="0.75">High · 75%</option>
+              <option value="1">Confirmed · 100%</option>
+            </select>
+          </label>
+        </div>
+        <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        <footer class="form-actions">
+          <button class="secondary-button" type="button" data-dialog-close>Cancel</button>
+          <button class="primary-button" type="submit">Add stakeholder</button>
+        </footer>
+      </form>
+
+      <form id="discovery-form" class="workflow-form" data-workflow-form="discovery" hidden>
+        <div class="form-grid">
+          <label class="form-field">Category
+            <select name="category" required>
+              <option value="measurable_pain">Measurable pain</option>
+              <option value="business_impact">Business impact</option>
+              <option value="technical_fit">Technical fit</option>
+              <option value="urgency">Urgency</option>
+              <option value="executive_sponsorship">Executive sponsorship</option>
+              <option value="champion_strength">Champion strength</option>
+              <option value="buying_process">Buying process</option>
+              <option value="procurement_friction">Procurement friction</option>
+              <option value="competitive_position">Competitive position</option>
+              <option value="access_to_technical_evidence">Technical evidence access</option>
+              <option value="poc_success">PoC success</option>
+              <option value="poc_timeline">PoC timeline</option>
+              <option value="general">General</option>
+            </select>
+          </label>
+          <label class="form-field">Evidence label
+            <select name="evidence_type" required>
+              <option value="verified_fact">Verified fact</option>
+              <option value="user_provided" selected>User provided</option>
+              <option value="hypothesis">Hypothesis</option>
+              <option value="generated_suggestion">Generated suggestion</option>
+            </select>
+          </label>
+          <label class="form-field full-span">Discovery question
+            <textarea name="question" minlength="3" maxlength="2000" required></textarea>
+          </label>
+          <label class="form-field full-span">Answer
+            <textarea name="answer" minlength="1" maxlength="5000" required></textarea>
+          </label>
+          <label class="form-field">Source label
+            <input name="source" type="text" minlength="2" maxlength="1000" required>
+          </label>
+          <label class="form-field">Source date
+            <input name="source_date" type="date" required>
+          </label>
+          <label class="form-field">Confidence
+            <select name="confidence" data-number required>
+              <option value="0.25">Low · 25%</option>
+              <option value="0.5" selected>Medium · 50%</option>
+              <option value="0.75">High · 75%</option>
+              <option value="1">Confirmed · 100%</option>
+            </select>
+          </label>
+          <label class="form-field full-span">Source URL <small>Optional.</small>
+            <input name="source_url" type="url" maxlength="2000" placeholder="Optional evidence URL">
+          </label>
+          <label class="form-field full-span">Notes <small>Optional context that should not be treated as scored evidence.</small>
+            <textarea name="notes" maxlength="4000"></textarea>
+          </label>
+        </div>
+        <p class="form-status" data-form-status role="status" aria-live="polite"></p>
+        <footer class="form-actions">
+          <button class="secondary-button" type="button" data-dialog-close>Cancel</button>
+          <button class="primary-button" type="submit">Add discovery</button>
+        </footer>
+      </form>
+    </div>
+  </dialog>
 
   <div class="sidebar-scrim" data-sidebar-scrim hidden></div>
   <script src="/static/app.js" defer></script>

@@ -14,8 +14,7 @@ RUN pip install --no-cache-dir .
 
 COPY templates ./templates
 COPY static ./static
-COPY data ./data
-RUN chown -R workbench:workbench /app
+RUN mkdir -p /app/data && chown -R workbench:workbench /app
 
 USER workbench
 EXPOSE 8000

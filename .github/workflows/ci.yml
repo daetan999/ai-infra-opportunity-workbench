@@ -21,3 +21,4 @@ jobs:
       - run: python -m pip install -e '.[dev]'
       - run: ruff check app tests
       - run: pytest
+      - run: docker build --tag opportunity-workbench:ci .

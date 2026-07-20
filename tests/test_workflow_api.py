@@ -186,3 +186,46 @@ def test_health_uses_final_product_identity(client: TestClient) -> None:
         "status": "ok",
         "service": "ai-infra-opportunity-workbench",
     }
+
+
+def test_api_rejects_whitespace_only_business_evidence(client: TestClient) -> None:
+    invalid_account = client.post(
+        "/api/accounts",
+        json={
+            "name": "Whitespace Validation Account",
+            "industry": "   ",
+            "geography": "Singapore",
+            "segment": "Enterprise",
+            "fictional": True,
+        },
+    )
+    assert invalid_account.status_code == 422
+
+    account_id = create_account(client)
+    invalid_signal = client.post(
+        f"/api/accounts/{account_id}/signals",
+        json={
+            "summary": "A syntactically valid signal with an invalid source.",
+            "source": "   ",
+            "source_date": date.today().isoformat(),
+            "evidence_type": "hypothesis",
+            "confidence": 0.4,
+            "notes": "",
+        },
+    )
+    assert invalid_signal.status_code == 422
+
+    invalid_discovery = client.post(
+        f"/api/accounts/{account_id}/discovery",
+        json={
+            "category": "measurable_pain",
+            "question": "What is the measurable constraint?",
+            "answer": "   ",
+            "source": "Synthetic discovery note",
+            "source_date": date.today().isoformat(),
+            "evidence_type": "user_provided",
+            "confidence": 0.5,
+            "notes": "",
+        },
+    )
+    assert invalid_discovery.status_code == 422

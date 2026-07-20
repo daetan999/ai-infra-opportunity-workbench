@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 EvidenceTypeValue = Literal[
     "verified_fact",
@@ -13,7 +13,11 @@ EvidenceTypeValue = Literal[
 ]
 
 
-class AccountCreate(BaseModel):
+class InputModel(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+
+class AccountCreate(InputModel):
     name: str = Field(min_length=2, max_length=200)
     industry: str = Field(min_length=2, max_length=120)
     geography: str = Field(min_length=2, max_length=120)
@@ -21,7 +25,7 @@ class AccountCreate(BaseModel):
     fictional: bool = False
 
 
-class SignalCreate(BaseModel):
+class SignalCreate(InputModel):
     summary: str = Field(min_length=3, max_length=2000)
     source: str = Field(min_length=2, max_length=1000)
     source_url: str | None = Field(default=None, max_length=2000)
@@ -31,7 +35,7 @@ class SignalCreate(BaseModel):
     notes: str = Field(default="", max_length=4000)
 
 
-class WorkloadCreate(BaseModel):
+class WorkloadCreate(InputModel):
     name: str = Field(min_length=3, max_length=240)
     workload_type: str = Field(min_length=2, max_length=80)
     description: str = Field(min_length=3, max_length=4000)
@@ -42,7 +46,7 @@ class WorkloadCreate(BaseModel):
     deployment_pattern: str | None = Field(default=None, max_length=120)
 
 
-class StakeholderCreate(BaseModel):
+class StakeholderCreate(InputModel):
     name: str = Field(min_length=2, max_length=200)
     title: str = Field(min_length=2, max_length=200)
     role: Literal[
@@ -58,7 +62,7 @@ class StakeholderCreate(BaseModel):
     confidence: float = Field(ge=0, le=1)
 
 
-class DiscoveryCreate(BaseModel):
+class DiscoveryCreate(InputModel):
     category: Literal[
         "measurable_pain",
         "business_impact",

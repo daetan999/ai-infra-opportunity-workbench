@@ -141,7 +141,7 @@ make test
 make coverage
 ```
 
-The current suite contains 66 unit, integration, API, and interface-contract tests. The application package has 96% branch coverage. CI runs lint, tests, and an 80% minimum coverage gate on every push and pull request.
+The suite covers unit, persistence, API, error-state, and interface contracts. The application package has 96% branch coverage. CI runs lint, tests, an 80% minimum coverage gate, and a clean-checkout container build on every push and pull request.
 
 ## Repository map
 
