@@ -47,3 +47,21 @@ def test_interface_is_local_accessible_and_progressively_enhanced():
     assert "data-sidebar-toggle" in script
     assert "data-print" in script
     assert "analysis-form" not in markup
+
+
+def test_documentation_visuals_are_self_contained_and_readable():
+    expected = {
+        "opportunity-workbench-hero.svg": "Opportunity Workbench",
+        "opportunity-workflow.svg": "Evidence to decision",
+        "qualification-model.svg": "Qualification model",
+    }
+
+    for filename, title in expected.items():
+        svg = (ROOT / "docs" / "assets" / filename).read_text(encoding="utf-8")
+        assert svg.startswith("<svg")
+        assert title in svg
+        assert 'role="img"' in svg
+        assert "<title>" in svg
+        assert "<desc>" in svg
+        assert 'href="http://' not in svg
+        assert 'href="https://' not in svg

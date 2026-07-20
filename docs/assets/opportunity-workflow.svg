@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="780" viewBox="0 0 1440 780" role="img" aria-labelledby="title desc">
+  <title>Evidence to decision</title>
+  <desc>A five-stage opportunity workflow that moves from captured signals through a workload hypothesis, customer discovery, evidence-based qualification, and an advance, reshape, or stop decision.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop stop-color="#08111d"/>
+      <stop offset="1" stop-color="#0f2030"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" x2="0" y1="0" y2="1">
+      <stop stop-color="#17263a"/>
+      <stop offset="1" stop-color="#101b29"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#49627d"/>
+    </marker>
+    <style>
+      text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .eyebrow { fill: #64d8bd; font-size: 15px; font-weight: 800; letter-spacing: 2px; }
+      .heading { fill: #eef4fa; font-size: 40px; font-weight: 760; }
+      .intro { fill: #9aabba; font-size: 18px; }
+      .number { fill: #64d8bd; font-size: 15px; font-weight: 900; letter-spacing: 1px; }
+      .title { fill: #eef4fa; font-size: 23px; font-weight: 760; }
+      .body { fill: #aab8c6; font-size: 16px; }
+      .label { fill: #78899b; font-size: 12px; font-weight: 800; letter-spacing: 1.4px; }
+    </style>
+  </defs>
+
+  <rect width="1440" height="780" rx="22" fill="url(#bg)"/>
+  <circle cx="1270" cy="60" r="300" fill="#345c73" opacity=".12"/>
+  <circle cx="60" cy="730" r="240" fill="#1e7566" opacity=".08"/>
+
+  <text x="80" y="83" class="eyebrow">CONTROLLED OPPORTUNITY PROGRESSION</text>
+  <text x="80" y="139" class="heading">Evidence to decision</text>
+  <text x="80" y="178" class="intro">Every stage creates an artifact that can confirm, reshape, or stop the motion.</text>
+
+  <line x1="250" y1="349" x2="1190" y2="349" stroke="#49627d" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <g>
+    <rect x="80" y="245" width="232" height="280" rx="15" fill="url(#card)" stroke="#30445a"/>
+    <rect x="101" y="267" width="46" height="31" rx="15" fill="#102f2c" stroke="#387468"/>
+    <text x="124" y="288" class="number" text-anchor="middle">01</text>
+    <text x="101" y="337" class="title">Capture signal</text>
+    <text x="101" y="375" class="body">Record what was</text>
+    <text x="101" y="399" class="body">observed, when, and</text>
+    <text x="101" y="423" class="body">from which source.</text>
+    <line x1="101" y1="453" x2="291" y2="453" stroke="#26364a"/>
+    <text x="101" y="481" class="label">OUTPUT</text>
+    <text x="101" y="506" fill="#c8d4df" font-size="15" font-weight="700">Evidence ledger</text>
+
+    <rect x="342" y="245" width="232" height="280" rx="15" fill="url(#card)" stroke="#30445a"/>
+    <rect x="363" y="267" width="46" height="31" rx="15" fill="#102f2c" stroke="#387468"/>
+    <text x="386" y="288" class="number" text-anchor="middle">02</text>
+    <text x="363" y="337" class="title">Frame workload</text>
+    <text x="363" y="375" class="body">Connect a possible</text>
+    <text x="363" y="399" class="body">constraint to a metric</text>
+    <text x="363" y="423" class="body">that could disprove it.</text>
+    <line x1="363" y1="453" x2="553" y2="453" stroke="#26364a"/>
+    <text x="363" y="481" class="label">OUTPUT</text>
+    <text x="363" y="506" fill="#c8d4df" font-size="15" font-weight="700">Falsifiable hypothesis</text>
+
+    <rect x="604" y="245" width="232" height="280" rx="15" fill="url(#card)" stroke="#397467" stroke-width="2"/>
+    <rect x="625" y="267" width="46" height="31" rx="15" fill="#64d8bd"/>
+    <text x="648" y="288" fill="#06251f" font-size="15" font-weight="900" text-anchor="middle">03</text>
+    <text x="625" y="337" class="title">Run discovery</text>
+    <text x="625" y="375" class="body">Test pain, baseline,</text>
+    <text x="625" y="399" class="body">ownership, urgency,</text>
+    <text x="625" y="423" class="body">and decision process.</text>
+    <line x1="625" y1="453" x2="815" y2="453" stroke="#315347"/>
+    <text x="625" y="481" class="label">OUTPUT</text>
+    <text x="625" y="506" fill="#c8d4df" font-size="15" font-weight="700">Confirmed unknowns</text>
+
+    <rect x="866" y="245" width="232" height="280" rx="15" fill="url(#card)" stroke="#30445a"/>
+    <rect x="887" y="267" width="46" height="31" rx="15" fill="#102f2c" stroke="#387468"/>
+    <text x="910" y="288" class="number" text-anchor="middle">04</text>
+    <text x="887" y="337" class="title">Qualify evidence</text>
+    <text x="887" y="375" class="body">Score completeness,</text>
+    <text x="887" y="399" class="body">surface risk, and keep</text>
+    <text x="887" y="423" class="body">unknowns visible.</text>
+    <line x1="887" y1="453" x2="1077" y2="453" stroke="#26364a"/>
+    <text x="887" y="481" class="label">OUTPUT</text>
+    <text x="887" y="506" fill="#c8d4df" font-size="15" font-weight="700">Auditable scorecard</text>
+
+    <rect x="1128" y="245" width="232" height="280" rx="15" fill="url(#card)" stroke="#30445a"/>
+    <rect x="1149" y="267" width="46" height="31" rx="15" fill="#102f2c" stroke="#387468"/>
+    <text x="1172" y="288" class="number" text-anchor="middle">05</text>
+    <text x="1149" y="337" class="title">Make decision</text>
+    <text x="1149" y="375" class="body">Choose the next step</text>
+    <text x="1149" y="399" class="body">that produces evidence</text>
+    <text x="1149" y="423" class="body">or closes the motion.</text>
+    <line x1="1149" y1="453" x2="1339" y2="453" stroke="#26364a"/>
+    <text x="1149" y="481" class="label">OUTPUT</text>
+    <text x="1149" y="506" fill="#c8d4df" font-size="15" font-weight="700">Advance · reshape · stop</text>
+  </g>
+
+  <rect x="80" y="574" width="1280" height="126" rx="14" fill="#0b1622" stroke="#26364a"/>
+  <text x="106" y="612" class="label">GOVERNING RULE</text>
+  <text x="106" y="649" fill="#eef4fa" font-size="22" font-weight="730">No stage advances on activity alone.</text>
+  <text x="106" y="679" class="intro">A meeting, demo, or technical trial counts only when it resolves an explicit qualification gap.</text>
+  <rect x="1120" y="610" width="207" height="50" rx="9" fill="#102f2c" stroke="#397467"/>
+  <text x="1224" y="641" fill="#64d8bd" font-size="14" font-weight="850" text-anchor="middle">EVIDENCE REQUIRED</text>
+
+  <text x="80" y="741" fill="#657589" font-size="13">Sanitized operating model · no customer data or outcome claims</text>
+</svg>
