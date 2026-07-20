@@ -9,13 +9,17 @@ from sqlalchemy import select
 from sqlalchemy.inspection import inspect
 
 from .database import Database
-from .models import Account, Base, EvidenceType, Opportunity, Signal
 from .models import (
+    Account,
+    Base,
     DiscoveryRecord,
+    EvidenceType,
     NextAction,
+    Opportunity,
     PoCPlan,
     QualificationScore,
     Risk,
+    Signal,
     Stakeholder,
     WorkloadHypothesis,
 )
@@ -121,6 +125,7 @@ class OpportunityRepository:
         industry: str | None = None,
         geography: str | None = None,
         segment: str | None = None,
+        fictional: bool = False,
     ) -> Snapshot:
         if not isinstance(name, str) or not name.strip():
             raise RepositoryValidationError("Account name must not be blank")
@@ -129,6 +134,7 @@ class OpportunityRepository:
             industry=industry,
             geography=geography,
             segment=segment,
+            fictional=fictional,
         )
         with self._database.session() as session:
             session.add(account)
@@ -173,7 +179,7 @@ class OpportunityRepository:
                 label = model.__name__.replace("Record", " record")
                 raise RepositoryValidationError(f"{label} {field} must not be blank")
             normalized_values[field] = value.strip()
-        if model in (Signal, DiscoveryRecord):
+        if model in (Signal, DiscoveryRecord, WorkloadHypothesis):
             normalized_values = _validate_provenance(normalized_values)
         with self._database.session() as session:
             if session.get(Account, account_id) is None:
@@ -206,7 +212,7 @@ class OpportunityRepository:
         with self._database.session() as session:
             if session.get(Account, account_id) is None:
                 raise RecordNotFoundError(f"Account {account_id} was not found")
-            account_id_column = getattr(model, "account_id")
+            account_id_column = model.account_id
             records = session.scalars(
                 select(model).where(account_id_column == account_id).order_by(model.id)
             ).all()

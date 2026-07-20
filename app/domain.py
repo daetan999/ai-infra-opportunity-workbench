@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 
 
-class QualificationArea(str, Enum):
+class QualificationArea(StrEnum):
     MEASURABLE_PAIN = "measurable_pain"
     BUSINESS_IMPACT = "business_impact"
     TECHNICAL_FIT = "technical_fit"
@@ -22,7 +22,7 @@ class QualificationArea(str, Enum):
 ALL_QUALIFICATION_AREAS: tuple[QualificationArea, ...] = tuple(QualificationArea)
 
 
-class StakeholderRole(str, Enum):
+class StakeholderRole(StrEnum):
     CHAMPION = "champion"
     EXECUTIVE_SPONSOR = "executive_sponsor"
     ECONOMIC_BUYER = "economic_buyer"
@@ -32,20 +32,20 @@ class StakeholderRole(str, Enum):
     OPERATIONS = "operations"
 
 
-class RiskLevel(str, Enum):
+class RiskLevel(StrEnum):
     LOW = "Low"
     MEDIUM = "Medium"
     HIGH = "High"
 
 
-class Recommendation(str, Enum):
+class Recommendation(StrEnum):
     ADVANCE = "Advance"
     RESHAPE = "Reshape"
     NURTURE = "Nurture"
     DISQUALIFY = "Disqualify"
 
 
-class PoCReadiness(str, Enum):
+class PoCReadiness(StrEnum):
     READY = "Ready"
     CONDITIONAL = "Conditional"
     NOT_READY = "Not ready"

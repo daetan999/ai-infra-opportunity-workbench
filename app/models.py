@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from enum import Enum as PythonEnum
+from enum import StrEnum
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     CheckConstraint,
     Date,
@@ -11,7 +12,6 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
-    JSON,
     String,
     Text,
 )
@@ -28,7 +28,7 @@ class Base(DeclarativeBase):
     pass
 
 
-class EvidenceType(str, PythonEnum):
+class EvidenceType(StrEnum):
     VERIFIED_FACT = "verified_fact"
     USER_PROVIDED = "user_provided"
     HYPOTHESIS = "hypothesis"
@@ -52,6 +52,7 @@ class Account(Base):
     industry: Mapped[str | None] = mapped_column(String(120))
     geography: Mapped[str | None] = mapped_column(String(120))
     segment: Mapped[str | None] = mapped_column(String(120))
+    fictional: Mapped[bool] = mapped_column(Boolean(), default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(), default=utc_now, nullable=False
     )
@@ -93,6 +94,7 @@ class Signal(Base):
     title: Mapped[str] = mapped_column(String(240), nullable=False)
     description: Mapped[str | None] = mapped_column(Text())
     source: Mapped[str | None] = mapped_column(String(1000))
+    source_url: Mapped[str | None] = mapped_column(String(2000))
     source_date: Mapped[date | None] = mapped_column(Date())
     evidence_type: Mapped[EvidenceType] = mapped_column(
         EVIDENCE_TYPE, default=EvidenceType.HYPOTHESIS, nullable=False
@@ -106,6 +108,12 @@ class Signal(Base):
 
 class WorkloadHypothesis(Base):
     __tablename__ = "workload_hypotheses"
+    __table_args__ = (
+        CheckConstraint(
+            "confidence >= 0.0 AND confidence <= 1.0",
+            name="ck_workload_hypotheses_confidence_range",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     account_id: Mapped[int] = mapped_column(
@@ -118,6 +126,10 @@ class WorkloadHypothesis(Base):
     workload_type: Mapped[str | None] = mapped_column(String(80))
     deployment_pattern: Mapped[str | None] = mapped_column(String(120))
     description: Mapped[str | None] = mapped_column(Text())
+    business_metric: Mapped[str | None] = mapped_column(String(240))
+    success_metrics: Mapped[str | None] = mapped_column(Text())
+    technical_requirements: Mapped[str | None] = mapped_column(Text())
+    confidence: Mapped[float] = mapped_column(Float(), default=0.5, nullable=False)
     status: Mapped[str] = mapped_column(String(40), default="hypothesis", nullable=False)
     notes: Mapped[str | None] = mapped_column(Text())
     created_at: Mapped[datetime] = mapped_column(
@@ -163,9 +175,11 @@ class DiscoveryRecord(Base):
     opportunity_id: Mapped[int | None] = mapped_column(
         ForeignKey("opportunities.id", ondelete="CASCADE"), index=True
     )
+    category: Mapped[str] = mapped_column(String(80), default="general", nullable=False)
     question: Mapped[str] = mapped_column(Text(), nullable=False)
     answer: Mapped[str | None] = mapped_column(Text())
     source: Mapped[str | None] = mapped_column(String(1000))
+    source_url: Mapped[str | None] = mapped_column(String(2000))
     source_date: Mapped[date | None] = mapped_column(Date())
     evidence_type: Mapped[EvidenceType] = mapped_column(
         EVIDENCE_TYPE, default=EvidenceType.HYPOTHESIS, nullable=False

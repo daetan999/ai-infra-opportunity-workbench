@@ -287,7 +287,7 @@ def test_assessment_requires_exactly_one_signal_per_area():
         OpportunityAssessment(signals=valid[:-1])
 
     with pytest.raises(ValueError, match="exactly one"):
-        OpportunityAssessment(signals=valid + (valid[0],))
+        OpportunityAssessment(signals=(*valid, valid[0]))
 
 
 def test_assessment_rejects_duplicate_stakeholder_roles_and_mutable_inputs():

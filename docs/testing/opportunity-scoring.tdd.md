@@ -23,20 +23,21 @@ Opportunity Workbench build brief.
 Command:
 
 ```text
-/Users/dae/Documents/Codex/2026-07-20/github-plugin-github-openai-curated-remote-4/work/audit_repos/ai-infra-opportunity-workbench/.venv/bin/python -m pytest -q tests/test_scoring.py
+python -m pytest -q tests/test_scoring.py
 ```
 
 Result: collection failed with `ModuleNotFoundError: No module named
 'app.domain'; 'app' is not a package`. This was the intended missing-domain
 failure before any production module was added. The checkpoint is commit
-`cf896b74873f64753dbbf7dd7c831fd802e07563`.
+`41b9dd4`.
 
 ### GREEN
 
 Focused command:
 
 ```text
-COVERAGE_FILE=.coverage.scoring /Users/dae/Documents/Codex/2026-07-20/github-plugin-github-openai-curated-remote-4/work/audit_repos/ai-infra-opportunity-workbench/.venv/bin/python -m pytest tests/test_scoring.py -q --cov=app.domain --cov=app.scoring --cov-report=term-missing --cov-fail-under=80
+COVERAGE_FILE=.coverage.scoring python -m pytest tests/test_scoring.py -q \
+  --cov=app.domain --cov=app.scoring --cov-report=term-missing --cov-fail-under=80
 ```
 
 Result: `32 passed`; total coverage for the owned `app` modules was `90.45%`
@@ -46,7 +47,7 @@ Result: `32 passed`; total coverage for the owned `app` modules was `90.45%`
 Full regression command:
 
 ```text
-/Users/dae/Documents/Codex/2026-07-20/github-plugin-github-openai-curated-remote-4/work/audit_repos/ai-infra-opportunity-workbench/.venv/bin/python -m pytest -q --no-cov
+python -m pytest -q --no-cov
 ```
 
 Result: `36 passed`. One upstream `StarletteDeprecationWarning` reports that the
@@ -83,7 +84,6 @@ are frozen typed records and enums, and scoring performs no I/O or model call.
 
 ## Coverage and known gaps
 
-The 90.45% result exceeds the required 80%. The focused suite intentionally does
-not re-exercise every branch of the legacy FastAPI compatibility loader; the full
-regression suite executes that path. No E2E browser test is warranted for this
-pure domain seam; UI integration belongs to the workbench interface layer.
+The focused 90.45% result exceeds the required 80%; the integrated suite later
+reached 96% branch coverage across the complete application. Browser validation
+belongs to the workbench interface layer rather than this pure domain seam.

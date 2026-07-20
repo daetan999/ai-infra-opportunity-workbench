@@ -43,6 +43,7 @@ def test_account_can_be_created_and_loaded_as_an_immutable_snapshot(database):
         "industry": "Healthcare",
         "geography": "Singapore",
         "segment": "Enterprise",
+        "fictional": False,
         "created_at": created["created_at"],
     }
     with pytest.raises(TypeError):
@@ -246,16 +247,14 @@ def test_related_record_cannot_reference_another_accounts_opportunity(database):
 
 
 def test_sqlite_foreign_keys_are_enabled_for_every_session(database):
-    with pytest.raises(IntegrityError):
-        with database.session() as session:
-            session.add(Signal(account_id=999, title="Orphan signal"))
+    with pytest.raises(IntegrityError), database.session() as session:
+        session.add(Signal(account_id=999, title="Orphan signal"))
 
 
 def test_database_session_rolls_back_and_closes_after_failure(database):
-    with pytest.raises(RuntimeError, match="abort transaction"):
-        with database.session() as session:
-            session.add(Account(name="Rolled-back account"))
-            raise RuntimeError("abort transaction")
+    with pytest.raises(RuntimeError, match="abort transaction"), database.session() as session:
+        session.add(Account(name="Rolled-back account"))
+        raise RuntimeError("abort transaction")
 
     assert OpportunityRepository(database).list_accounts() == ()
 
