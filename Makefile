@@ -11,4 +11,3 @@ test:
 
 lint:
 	ruff check app tests
-

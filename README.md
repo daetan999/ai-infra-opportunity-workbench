@@ -123,13 +123,13 @@ docker run --rm -p 8000:8000 opportunity-workbench
 | `GET` | `/api/accounts` | List portfolio accounts |
 | `POST` | `/api/accounts` | Create a fictional/sanitized account |
 | `POST` | `/api/accounts/{id}/signals` | Add a sourced account signal |
-| `POST` | `/api/accounts/{id}/workload` | Define or update the workload hypothesis |
+| `PUT` | `/api/accounts/{id}/workload` | Define or update the workload hypothesis |
 | `POST` | `/api/accounts/{id}/stakeholders` | Map a member of the buying group |
 | `POST` | `/api/accounts/{id}/discovery` | Add categorized discovery evidence |
-| `POST` | `/api/accounts/{id}/qualify` | Persist the deterministic qualification result |
+| `GET` | `/api/accounts/{id}/qualification` | Calculate and persist the deterministic qualification result |
 | `GET` | `/api/accounts/{id}/handoff` | Build a structured PoC handoff |
-| `GET` | `/api/accounts/{id}/export.json` | Export the complete account record |
-| `GET` | `/api/accounts/{id}/export.md` | Export a human-readable qualification brief |
+| `GET` | `/api/accounts/{id}/export?format=json` | Export the structured handoff record |
+| `GET` | `/api/accounts/{id}/export?format=markdown` | Export a human-readable qualification brief |
 
 Interactive OpenAPI documentation is available at `/docs` while the app is running.
 

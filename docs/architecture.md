@@ -72,7 +72,7 @@ sequenceDiagram
     participant Score as Qualification engine
     participant DB as SQLite
 
-    User->>API: POST /api/accounts/{id}/qualify
+    User->>API: GET /api/accounts/{id}/qualification
     API->>Repo: load aggregate snapshot
     Repo->>DB: select account + related evidence
     DB-->>Repo: records
