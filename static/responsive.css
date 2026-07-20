@@ -19,9 +19,16 @@
 }
 
 @media (max-width: 900px) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   .sidebar {
+    pointer-events: none;
     transform: translateX(-100%);
     transition: transform 180ms ease;
+    visibility: hidden;
   }
 
   body.sidebar-open {
@@ -29,7 +36,9 @@
   }
 
   body.sidebar-open .sidebar {
+    pointer-events: auto;
     transform: translateX(0);
+    visibility: visible;
   }
 
   .shell-content {
@@ -198,13 +207,4 @@
     border-color: #d8dfe6;
   }
 
-  .lead-copy,
-  .intro-copy,
-  .surface-heading p:not(.eyebrow),
-  dd,
-  .timeline p,
-  .question-list p,
-  .action-callout {
-    color: #293847;
-  }
-}
+  .lead
