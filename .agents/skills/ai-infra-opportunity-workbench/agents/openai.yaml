@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ai Infra Opportunity Workbench"
+  short_description: "Repo-specific patterns and workflows for ai-infra-opportunity-workbench"
+  default_prompt: "Use the ai-infra-opportunity-workbench repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
