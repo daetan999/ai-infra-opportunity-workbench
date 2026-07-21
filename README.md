@@ -1,131 +1,175 @@
-# AI Infrastructure Account Intelligence
+# AI Infrastructure Opportunity & Discovery Workbench
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-account%20planning-009688)](#)
-[![AI Infrastructure](https://img.shields.io/badge/AI%20Infrastructure-GPU%20%C2%B7%20Cloud%20%C2%B7%20Networking-76B900)](#)
-[![Gemini](https://img.shields.io/badge/Gemini-optional%20enrichment-8E75B2)](#)
-[![Tests](https://img.shields.io/badge/tests-offline%20deterministic-2e5d43)](#)
+[![CI](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Coverage](https://img.shields.io/badge/branch%20coverage-96%25-2E7D32)](#verification)
+[![License](https://img.shields.io/badge/license-MIT-0B1F33)](LICENSE)
 
-A sanitized, runnable account-planning application for AI-infrastructure solution selling. It converts a selected company, solution motion, customer segment, and known account context into a structured commercial and technical brief.
+![Opportunity Workbench hero](docs/assets/opportunity-workbench-hero.svg)
 
-The application is designed to move an infrastructure conversation from **generic product positioning** to a **testable account hypothesis, mapped buying group, quantified value path, and decision-oriented PoC**.
+A runnable deal-qualification workspace for complex AI-infrastructure opportunities. It turns discovery evidence into a transparent qualification score, an explicit advance/reshape/nurture/disqualify recommendation, and a bounded proof-of-concept handoff.
 
-## Rendered Product Example
+This is a portfolio implementation built with synthetic scenarios. It demonstrates the technical and commercial reasoning used to qualify accelerator, networking, capacity, and AI-platform opportunities without representing real customers, deployments, revenue, or pipeline.
 
-[![Rendered AI Infrastructure Account Intelligence workbench](docs/assets/account-intelligence-workbench.svg)](docs/assets/account-intelligence-workbench.svg)
+## Product tour
 
-The example above uses an enterprise GPU-compute motion. The output connects three infrastructure pressures to measurable proof points, maps four buying roles, and defines a bounded 2–4 week PoC with explicit acceptance criteria.
+### Portfolio dashboard
 
-## What It Produces
+![Opportunity portfolio dashboard](docs/assets/opportunity-dashboard.png)
 
-| Output | Purpose in the sales motion |
-|---|---|
-| Account and workload hypotheses | Converts public signals and known context into questions that can be validated with the customer. |
-| Economic and technical buyer map | Separates budget ownership, architecture authority, champion access, and commercial approval. |
-| Technical-to-business value paths | Connects utilization, throughput, latency, networking, power, or operations to unit economics and delivery outcomes. |
-| Discovery questions | Tests whether the pain, urgency, ownership, and decision process are real. |
-| Objection map | Prepares evidence-based responses without pretending an objection has already been resolved. |
-| Falsifiable PoC criteria | Defines baseline, success measures, evidence, production owner, and decision date before evaluation begins. |
-| Next-step plan | Ends with actions that advance, reshape, or disqualify the opportunity. |
+The dashboard surfaces opportunity stage, value hypothesis, missing evidence, risk, score, and next action so weak deals cannot hide behind activity.
 
-## How It Can Drive Deal Value
+### Account qualification workspace
 
-[![AI infrastructure account intelligence value path](docs/assets/account-intelligence-value-path.svg)](docs/assets/account-intelligence-value-path.svg)
+![Completed qualification workspace](docs/assets/opportunity-account-workspace.png)
 
-The value is not that the application “knows” the customer. It does not. Its value is that it forces the seller to expose weak thinking before a customer meeting:
+Each account workspace keeps signals, workload hypotheses, stakeholders, discovery evidence, qualification, risks, and PoC handoff in one auditable record.
 
-- **Qualification:** replaces broad account research with explicit workload, pain, urgency, ownership, and evidence hypotheses.
-- **Multi-threading:** shows which buyer role is missing instead of treating “the customer” as one stakeholder.
-- **Value engineering:** pairs every technical claim with a measurable operational or financial metric.
-- **PoC control:** prevents open-ended technical trials by defining success, evidence, ownership, rollback, and a decision date.
-- **Pipeline quality:** creates a clear path to advance, reshape, or disqualify rather than preserving weak opportunities indefinitely.
+## Workflow
 
-Representative proof points include GPU utilization, throughput, accelerator idle time, latency, cost per million tokens, fabric performance, rack density, PUE, time to capacity, buyer access, and PoC decision status.
+![Opportunity qualification workflow](docs/assets/opportunity-workflow.svg)
 
-## Application Scope
+1. **Frame the account** — capture a fictional organization, segment, region, and opportunity hypothesis.
+2. **Record sourced signals** — separate the observation, source URL, source type, and collection date from the seller's interpretation.
+3. **Define the workload** — state the AI workload, constraint, measurable business outcome, success criterion, and confidence.
+4. **Map the buying group** — identify business ownership, technical authority, champion strength, and gaps.
+5. **Capture discovery evidence** — organize findings around pain, urgency, metrics, decision process, and competition.
+6. **Qualify transparently** — calculate a deterministic score with visible dimension-level evidence and caps.
+7. **Control the PoC** — convert a qualified hypothesis into acceptance criteria, evidence owners, dates, and rollback conditions.
+8. **Choose the next action** — advance, reshape, nurture, or disqualify based on evidence rather than narrative optimism.
 
-The built-in catalog covers eleven companies across accelerated compute, semiconductors, AI networking, servers, specialized cloud infrastructure, and data-center power and cooling.
+## Qualification model
 
-Five solution motions are included:
+![Qualification model](docs/assets/qualification-model.svg)
 
-1. GPU Compute & Accelerated Platforms
-2. Cloud AI Platform
-3. AI Networking & Interconnect
-4. Data Center Power, Cooling & Systems
-5. MLOps & Inference Operations
+The score is deterministic and capped at 100 points:
 
-The deterministic engine runs without external services. When `GEMINI_API_KEY` is present, Gemini can refine the narrative using only the structured brief already generated by the application. The model is explicitly instructed not to add deployments, contracts, customer claims, financial results, or current events.
+| Dimension | Weight | What earns confidence |
+|---|---:|---|
+| Pain and impact | 20 | A specific infrastructure constraint tied to a measurable consequence |
+| Urgency and timing | 15 | A dated business or technical forcing function |
+| Workload fit | 20 | A defined AI workload, baseline, success measure, and technical constraint |
+| Buying group | 15 | Access to business and technical authority plus a credible champion |
+| Decision process | 10 | Evaluation criteria, procurement path, and a decision date |
+| Competitive position | 10 | Known alternatives and a testable differentiation hypothesis |
+| Evidence quality | 10 | Direct, sourced, attributable evidence rather than unsupported inference |
+
+Evidence provenance matters. User-provided and customer-confirmed inputs may receive full credit; inferred inputs are capped; missing evidence scores zero. High-impact risks and absent decision owners can also cap the overall recommendation. The API returns the score breakdown, caps applied, missing evidence, risks, and recommended next action.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    UI[Browser UI] --> API[FastAPI /api/analyze]
-    API --> CAT[Sanitized company catalog]
-    API --> ENG[Deterministic account-intelligence engine]
-    ENG --> BRIEF[Buyer map · hypotheses · discovery · PoC]
-    BRIEF --> OPT{Gemini key configured?}
-    OPT -->|No| OUT[Structured account brief]
-    OPT -->|Yes| GEM[Guarded Gemini enrichment]
-    GEM --> OUT
+    UI["Server-rendered workspace"] --> API["FastAPI routes + Pydantic validation"]
+    API --> REPO["SQLAlchemy repository"]
+    REPO --> DB[("SQLite")]
+    API --> MAP["Evidence-to-score mapper"]
+    MAP --> SCORE["Deterministic qualification engine"]
+    SCORE --> DECISION["Advance · Reshape · Nurture · Disqualify"]
+    API --> EXPORT["Markdown + JSON handoff"]
+    API -. optional .-> NARRATIVE["Guarded narrative adapter"]
 ```
 
-## Design Decisions
+The core workflow is offline and deterministic. The web layer does not decide qualification; it validates input and orchestrates domain services. Persistence uses immutable response snapshots so callers cannot mutate stored ORM state. See [docs/architecture.md](docs/architecture.md) for the entity model, request flows, and control boundaries.
 
-| Decision | Implementation |
-|---|---|
-| Core workflow must work offline | Account hypotheses and sales artifacts are generated deterministically from a versioned catalog. |
-| AI must not be the source of truth | Gemini receives the deterministic brief only and is restricted from adding external facts. |
-| The output must support a deal motion | Every analysis includes stakeholders, discovery questions, objections, measurable outcomes, and PoC acceptance criteria. |
-| Public portfolio must remain sanitized | No customer data, credentials, proprietary integrations, or internal account plans are included. |
-| Technical value must connect to economics | Each opportunity hypothesis pairs an infrastructure constraint with a measurable technical and business metric. |
+## Commercial relevance
 
-## Project Structure
+- **Pipeline discipline:** exposes missing economic, technical, and decision evidence before forecast confidence rises.
+- **Solution discovery:** connects workload constraints such as GPU starvation, network contention, inference latency, and capacity lead time to measurable business outcomes.
+- **Multi-threading:** distinguishes champions from budget owners, technical authorities, and procurement stakeholders.
+- **Value engineering:** requires a baseline and success measure instead of accepting generic claims about performance or savings.
+- **PoC control:** prevents open-ended evaluations by defining scope, acceptance evidence, owners, dates, rollback, and a decision gate.
+- **Handoff quality:** exports a structured, reviewable record rather than an untraceable meeting summary.
+
+## Data and trust boundary
+
+The repository ships with three clearly labeled fictional scenarios. Runtime records are stored locally in SQLite and are excluded from version control.
+
+- No customer names, confidential notes, production credentials, pricing, or revenue data are included.
+- A signal's observation and provenance are stored separately from interpretation.
+- Scores are deterministic; optional narrative text cannot alter score inputs, caps, or recommendations.
+- Generated output is a qualification hypothesis and still requires human review and customer validation.
+- The application is a portfolio workbench, not a CRM, forecasting system, or substitute for legal/commercial approval.
+
+## Quick start
+
+Requirements: Python 3.12 or later.
+
+```bash
+git clone https://github.com/daetan999/ai-infra-opportunity-workbench.git
+cd ai-infra-opportunity-workbench
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
+```
+
+Open `http://127.0.0.1:8000`. The default configuration creates a local SQLite database and seeds only the fictional demo scenarios.
+
+You can also run the container locally:
+
+```bash
+docker build -t opportunity-workbench .
+docker run --rm -p 8000:8000 opportunity-workbench
+```
+
+## API surface
+
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/health` | Liveness response |
+| `GET` | `/api/accounts` | List portfolio accounts |
+| `POST` | `/api/accounts` | Create a fictional/sanitized account |
+| `POST` | `/api/accounts/{id}/signals` | Add a sourced account signal |
+| `PUT` | `/api/accounts/{id}/workload` | Define or update the workload hypothesis |
+| `POST` | `/api/accounts/{id}/stakeholders` | Map a member of the buying group |
+| `POST` | `/api/accounts/{id}/discovery` | Add categorized discovery evidence |
+| `GET` | `/api/accounts/{id}/qualification` | Calculate and persist the deterministic qualification result |
+| `GET` | `/api/accounts/{id}/handoff` | Build a structured PoC handoff |
+| `GET` | `/api/accounts/{id}/export?format=json` | Export the structured handoff record |
+| `GET` | `/api/accounts/{id}/export?format=markdown` | Export a human-readable qualification brief |
+
+Interactive OpenAPI documentation is available at `/docs` while the app is running.
+
+## Verification
+
+```bash
+make lint
+make test
+make coverage
+```
+
+The suite covers unit, persistence, API, error-state, and interface contracts. The application package has 96% branch coverage. CI runs lint, tests, an 80% minimum coverage gate, and a clean-checkout container build on every push and pull request.
+
+## Repository map
 
 ```text
-app.py                         FastAPI routes and request validation
-data/catalog.py                Sanitized company and solution-motion catalog
-data/account_intelligence.py   Deterministic engine and optional Gemini enrichment
-templates/index.html           Server-rendered application shell
-static/styles.css              Responsive professional interface
-static/app.js                  API interaction and results rendering
-tests/                         Offline endpoint and engine tests
-docs/architecture.md           Component and control details
-docs/assets/                   Product and value-path renderings
+app/
+  main.py          HTTP and HTML orchestration
+  repository.py    SQLAlchemy persistence boundary
+  models.py        Persistent entities
+  scoring.py       Deterministic qualification policy
+  presentation.py  Evidence mapping, view models, and exports
+  enrichment.py    Optional guarded narrative adapter
+templates/         Server-rendered product workspace
+static/            Responsive CSS and interaction JavaScript
+tests/             Unit, repository, API, and UI contract tests
+docs/assets/       Product visuals and verified screenshots
+docs/testing/      RED/GREEN TDD checkpoints
 ```
 
-## Run Locally
+## Current limitations and roadmap
 
-```bash
-python -m venv .venv
-source .venv/bin/activate       # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app:app --reload
-```
+This public implementation is intentionally single-user, SQLite-backed, and local-first. It does not include authentication, CRM sync, production observability, schema migrations, role-based access, external enrichment, or multi-tenant isolation.
 
-Open `http://127.0.0.1:8000`.
-
-Gemini enrichment is optional:
-
-```bash
-cp .env.example .env
-export GEMINI_API_KEY="your-key"
-export GEMINI_MODEL="gemini-2.5-flash"
-```
-
-The application remains fully usable without these variables.
-
-## Test
-
-```bash
-pytest -q
-```
-
-Tests do not call external APIs.
-
-## Public-Portfolio Boundary
-
-This repository uses generalized public-company categories and synthetic account contexts. It does not contain confidential customer discovery, pricing, contracts, internal forecasts, production credentials, or proprietary data. Generated output is an account-planning hypothesis and must be validated through real customer discovery.
+Natural next steps are PostgreSQL with Alembic migrations, authenticated workspaces, approved CRM/public-source connectors, score-policy versioning, audit events, accessible component-level browser tests, and deployment observability.
 
 ## License
 
-Released under the MIT License.
+Released under the [MIT License](LICENSE).
+
+---
+
+[Part of the Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
