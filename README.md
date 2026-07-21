@@ -172,4 +172,4 @@ Released under the [MIT License](LICENSE).
 
 ---
 
-Part of [Dae Tan's AI Infrastructure Solutions portfolio](https://github.com/daetan999), focused on translating AI workloads into measurable infrastructure decisions and controlled customer outcomes.
+[Part of the Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
