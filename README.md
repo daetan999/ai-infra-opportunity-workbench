@@ -82,6 +82,12 @@ The core workflow is offline and deterministic. The web layer does not decide qu
 - **PoC control:** prevents open-ended evaluations by defining scope, acceptance evidence, owners, dates, rollback, and a decision gate.
 - **Handoff quality:** exports a structured, reviewable record rather than an untraceable meeting summary.
 
+## Design Decisions
+
+- **Use deterministic scoring and explicit caps.** Reviewers can see why an opportunity advances or stops. Fixed policy weights reduce seller discretion; validated conversion evidence or a versioned qualification policy would justify changing them.
+- **Store observations separately from interpretation.** This preserves provenance and prevents seller inference from becoming customer fact. The workflow requires more disciplined data entry; an approved CRM or enrichment source with equivalent provenance could reduce that burden.
+- **Bound every PoC with a decision gate.** Acceptance evidence, owners, timing, and rollback conditions prevent open-ended technical activity. Some early opportunities will pause sooner; stronger sponsorship or newly confirmed workload evidence can reopen the gate.
+
 ## Data and trust boundary
 
 The repository ships with three clearly labeled fictional scenarios. Runtime records are stored locally in SQLite and are excluded from version control.
