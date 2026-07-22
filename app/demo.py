@@ -21,6 +21,18 @@ _SCENARIOS = (
         "pain": "Peak response latency exceeds the fictional service target.",
         "impact": "Slow responses increase review time for the synthetic analyst workflow.",
         "metric": "Cost per grounded response",
+        "success_metrics": (
+            "45 peak RPS at or below the 900 ms latency target, with grounded-answer quality "
+            "measured against an approved baseline."
+        ),
+        "technical_requirements": (
+            "70B model class; 18 TB governed data; 35% annual growth; private or hybrid "
+            "deployment posture."
+        ),
+        "workload_notes": (
+            "Fictional case northstar-private-rag-v1; all requirements remain hypotheses "
+            "until benchmark validation."
+        ),
     },
     {
         "name": "Bluehaven Compute (Fictional)",
@@ -98,13 +110,17 @@ def seed_demo_data(repository: OpportunityRepository) -> None:
             workload_type=scenario["workload_type"],
             description="Synthetic workload used to demonstrate qualification workflow behavior.",
             business_metric=scenario["metric"],
-            success_metrics="Baseline throughput, latency, utilization, and outcome quality.",
-            technical_requirements=(
-                "Representative data, bounded test window, and observable baseline."
+            success_metrics=scenario.get(
+                "success_metrics",
+                "Baseline throughput, latency, utilization, and outcome quality.",
+            ),
+            technical_requirements=scenario.get(
+                "technical_requirements",
+                "Representative data, bounded test window, and observable baseline.",
             ),
             confidence=0.75,
             status="hypothesis",
-            notes="Requires benchmark validation.",
+            notes=scenario.get("workload_notes", "Requires benchmark validation."),
         )
         for name, title, role, relationship_status in (
             ("Alex Morgan", "AI Platform Lead", "champion", "engaged"),
