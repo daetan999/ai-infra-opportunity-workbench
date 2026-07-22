@@ -86,6 +86,8 @@ The core workflow is offline and deterministic. The web layer does not decide qu
 
 The repository ships with three clearly labeled fictional scenarios. Runtime records are stored locally in SQLite and are excluded from version control.
 
+The Northstar demo is the discovery-stage view of the portfolio's shared private-RAG case: a 70B model class, 45 peak RPS, a 900 ms latency target, 18 TB of governed data, 35% annual growth, and a private or hybrid deployment posture. These remain workload hypotheses until benchmark evidence supports them.
+
 - No customer names, confidential notes, production credentials, pricing, or revenue data are included.
 - A signal's observation and provenance are stored separately from interpretation.
 - Scores are deterministic; optional narrative text cannot alter score inputs, caps, or recommendations.

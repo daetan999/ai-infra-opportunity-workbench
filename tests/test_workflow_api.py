@@ -142,11 +142,27 @@ def test_demo_seed_contains_three_clearly_fictional_accounts(tmp_path) -> None:
     database_url = f"sqlite:///{tmp_path / 'demo.db'}"
     with TestClient(create_app(database_url=database_url, seed_demo=True)) as demo_client:
         response = demo_client.get("/api/accounts")
+        accounts = response.json()
+        northstar = next(account for account in accounts if "Northstar" in account["name"])
+        handoff_response = demo_client.get(f"/api/accounts/{northstar['id']}/handoff")
 
     assert response.status_code == 200
-    accounts = response.json()
+    assert handoff_response.status_code == 200
     assert len(accounts) >= 3
     assert all(account["fictional"] is True for account in accounts)
+    handoff = handoff_response.json()
+    assert handoff["workload"]["success_metrics"] == (
+        "45 peak RPS at or below the 900 ms latency target, with grounded-answer quality "
+        "measured against an approved baseline."
+    )
+    assert handoff["workload"]["technical_requirements"] == (
+        "70B model class; 18 TB governed data; 35% annual growth; private or hybrid "
+        "deployment posture."
+    )
+    assert handoff["workload"]["notes"] == (
+        "Fictional case northstar-private-rag-v1; all requirements remain hypotheses until "
+        "benchmark validation."
+    )
 
 
 def test_rendered_interface_and_error_states(client: TestClient) -> None:
