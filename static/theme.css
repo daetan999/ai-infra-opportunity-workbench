@@ -1,0 +1,145 @@
+@import url("https://fonts.googleapis.com/css2?family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;0,800;1,400&family=Azeret+Mono:wght@400;500;600&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap");
+
+/* Field journal: evidence should feel considered, not like an AI control room. */
+:root {
+  color-scheme: light;
+  --canvas: #f4eee2;
+  --canvas-soft: #e7dac7;
+  --sidebar: #25372d;
+  --surface: #fffaf0;
+  --surface-raised: #f8f0e2;
+  --surface-muted: #ece0ce;
+  --line: #cdbfa9;
+  --line-strong: #9d8d75;
+  --text: #2b2923;
+  --text-soft: #504b40;
+  --muted: #6d6659;
+  --faint: #827867;
+  --accent: #b24e32;
+  --accent-strong: #923b25;
+  --accent-ink: #fff9ef;
+  --blue: #29586b;
+  --warning: #a76d18;
+  --danger: #9d3430;
+  --success: #366a4b;
+  --radius: 4px;
+  --radius-small: 3px;
+  --shadow: 0 12px 30px rgb(74 54 30 / 10%);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: "Alegreya Sans", "Trebuchet MS", sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(circle at 84% -4%, rgb(190 102 61 / 18%), transparent 30rem),
+    linear-gradient(115deg, #f7f1e6, var(--canvas));
+  font-size: 15px;
+}
+
+h1,
+h2,
+h3,
+.brand-lockup strong,
+.workspace-header h2 {
+  font-family: Fraunces, Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.nav-label,
+.eyebrow,
+.micro-label,
+.metric-label,
+.brand-lockup small,
+.nav-icon,
+.pill,
+th,
+dt {
+  font-family: "Azeret Mono", ui-monospace, monospace;
+  letter-spacing: 0.06em;
+}
+
+.sidebar {
+  background: #25372d;
+  color: #f8f0e2;
+  border-color: #4e6252;
+}
+
+.sidebar .nav-link,
+.sidebar .nav-label,
+.sidebar .brand-lockup small,
+.sidebar .sidebar-note small {
+  color: #c6cfbb;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.is-active,
+.sidebar .sidebar-note {
+  border-color: #70816b;
+  background: #314438;
+  color: #fffaf0;
+}
+
+.sidebar .brand-mark {
+  border-radius: 50%;
+  border-color: #d8875b;
+  background: #3c4934;
+  color: #f0a06c;
+}
+
+.sidebar .nav-link.is-active { box-shadow: inset 3px 0 #e48b5d; }
+.sidebar .status-dot { box-shadow: none; }
+
+.topbar {
+  border-color: var(--line);
+  background: rgb(244 238 226 / 92%);
+}
+
+.surface,
+.metric-card,
+.workspace-header,
+.modal-card,
+.search-field,
+.detail-grid > div,
+.discovery-strip article,
+.stakeholder-card {
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+.surface,
+.metric-card,
+.workspace-header {
+  background: rgb(255 250 240 / 88%);
+}
+
+.primary-button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: none;
+}
+
+.primary-button:hover { background: #913c27; }
+.secondary-button { border-color: var(--line-strong); background: transparent; }
+
+input,
+select,
+textarea,
+.search-field {
+  background: #fffdf7;
+  color: var(--text);
+}
+
+table thead,
+.table-wrap thead { background: #e9dcc8; }
+
+@media (max-width: 760px) {
+  .sidebar { background: #25372d; }
+}

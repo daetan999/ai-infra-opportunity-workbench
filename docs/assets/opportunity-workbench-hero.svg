@@ -23,6 +23,37 @@
       .accent { fill: #64d8bd; }
       .rule { stroke: #26364a; stroke-width: 1; }
     </style>
+    <style>
+      /* The GitHub preview mirrors the warm field-journal application theme. */
+      text { font-family: Georgia, "Times New Roman", serif !important; }
+      .label, .small, .micro { font-family: "Azeret Mono", "Courier New", monospace !important; }
+      .heading { fill: #2b2923 !important; }
+      .body { fill: #504b40 !important; }
+      .small, .micro { fill: #6d6659 !important; }
+      .accent { fill: #b24e32 !important; }
+      .rule { stroke: #cdbfa9 !important; }
+      stop[stop-color="#07101b"] { stop-color: #f4eee2 !important; }
+      stop[stop-color="#0d1b29"] { stop-color: #e7dac7 !important; }
+      stop[stop-color="#142235"] { stop-color: #fffaf0 !important; }
+      stop[stop-color="#0f1a28"] { stop-color: #f8f0e2 !important; }
+      [fill="#07101b"], [fill="#0d1b29"], [fill="#0a1420"] { fill: #f4eee2 !important; }
+      [fill="#142235"], [fill="#0f1a28"], [fill="#132030"] { fill: #fffaf0 !important; }
+      [fill="#070d16"] { fill: #25372d !important; }
+      [fill="#0d1724"] { fill: #ece0ce !important; }
+      [fill="#10252b"] { fill: #e8dcc8 !important; }
+      [fill="#102d2a"] { fill: #3d4a35 !important; }
+      [fill="#132e2d"] { fill: #e4eadf !important; }
+      [fill="#352c1d"] { fill: #f3e0bb !important; }
+      [fill="#eef4fa"] { fill: #2b2923 !important; }
+      [fill="#c3cfdb"] { fill: #504b40 !important; }
+      [fill="#8999ab"], [fill="#657589"] { fill: #6d6659 !important; }
+      [fill="#64d8bd"], [fill="#82ead2"] { fill: #b24e32 !important; }
+      [fill="#65d6a1"] { fill: #366a4b !important; }
+      [fill="#f4c56b"] { fill: #a76d18 !important; }
+      [fill="#06251f"] { fill: #fff9ef !important; }
+      [stroke="#26364a"], [stroke="#2d4157"], [stroke="#3c506a"] { stroke: #cdbfa9 !important; }
+      [stroke="#4f9b8c"], [stroke="#376f64"], [stroke="#397467"] { stroke: #8c9c76 !important; }
+    </style>
   </defs>
 
   <rect width="1440" height="900" rx="22" fill="url(#background)"/>

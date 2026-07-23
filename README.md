@@ -12,6 +12,14 @@ A runnable deal-qualification workspace for complex AI-infrastructure opportunit
 
 This is a portfolio implementation built with synthetic scenarios. It demonstrates the technical and commercial reasoning used to qualify accelerator, networking, capacity, and AI-platform opportunities without representing real customers, deployments, revenue, or pipeline.
 
+## Visual system
+
+The workbench is designed as a warm **field journal**, not a generic AI control room. Olive navigation,
+clay decision actions, and ivory working surfaces make the evidence trail feel deliberate and human.
+Fraunces gives decision headings an editorial voice; Alegreya Sans keeps dense account notes readable;
+Azeret Mono distinguishes labels, scores, and provenance. Tight radii and restrained shadows keep the
+surface closer to a review record than a polished SaaS dashboard.
+
 ## Product tour
 
 ### Portfolio dashboard
