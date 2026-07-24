@@ -1,186 +1,168 @@
-# AI Infrastructure Opportunity & Discovery Workbench
+# AI Infrastructure Opportunity Workbench
 
 [![CI](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/daetan999/ai-infra-opportunity-workbench/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Coverage](https://img.shields.io/badge/branch%20coverage-96%25-2E7D32)](#verification)
-[![License](https://img.shields.io/badge/license-MIT-0B1F33)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-3d4a35)](LICENSE)
 
-![Opportunity Workbench hero](docs/assets/opportunity-workbench-hero.svg)
+An evidence-led workspace for deciding whether a complex AI-infrastructure opportunity should advance, be reshaped, be nurtured, or stop.
 
-A runnable deal-qualification workspace for complex AI-infrastructure opportunities. It turns discovery evidence into a transparent qualification score, an explicit advance/reshape/nurture/disqualify recommendation, and a bounded proof-of-concept handoff.
+![Portfolio view of three fictional AI-infrastructure opportunities in the olive, clay, and ivory Opportunity Workbench](docs/assets/opportunity-dashboard.png)
 
-This is a portfolio implementation built with synthetic scenarios. It demonstrates the technical and commercial reasoning used to qualify accelerator, networking, capacity, and AI-platform opportunities without representing real customers, deployments, revenue, or pipeline.
+*The portfolio view puts qualification, the latest sourced signal, and the next evidence-producing action on one review surface.*
+
+This is a local-first portfolio implementation built with fictional scenarios. It demonstrates opportunity discovery and qualification logic without representing customer activity, revenue, deployments, or pipeline.
+
+## The decision it supports
+
+Technical interest is not the same as a qualified opportunity. The workbench makes the evidence behind a pursuit reviewable before a team commits solution resources.
+
+It brings five questions into one record:
+
+1. What workload and infrastructure constraint are being tested?
+2. What measurable business consequence would make the constraint material?
+3. Who owns the technical, economic, and procurement decisions?
+4. Which claims are observed, confirmed, inferred, or still missing?
+5. What next action will resolve an evidence gap or close the motion?
+
+## Account review
+
+![Northstar Mutual fictional account showing workload evidence and a 67 out of 100 Reshape qualification](docs/assets/opportunity-account-workspace.png)
+
+*The seeded Northstar scenario connects a private-RAG workload hypothesis to discovery evidence. Its 67/100 score produces a **Reshape** recommendation and keeps weaker dimensions visible.*
+
+The account workspace combines:
+
+- a workload hypothesis with constraint, outcome, and validation measure;
+- dated signals with source and provenance;
+- stakeholder roles and relationship state;
+- categorized discovery findings;
+- a deterministic score breakdown, caps, gaps, and recommendation;
+- a bounded proof-of-concept handoff in Markdown or JSON.
+
+## Qualification workflow
+
+![Five-stage workflow from sourced signal through workload framing, discovery, qualification, and decision](docs/assets/opportunity-workflow.svg)
+
+Activity does not increase the score. The engine evaluates ten qualification areas, each worth up to 10 points:
+
+| Qualification area | Maximum | Evidence sought |
+|---|---:|---|
+| Measurable pain | 10 | A specific operational constraint with a baseline |
+| Business impact | 10 | A financial or strategic consequence with an owner |
+| Technical fit | 10 | Workload constraints and acceptance criteria |
+| Urgency | 10 | A dated technical or business forcing function |
+| Executive sponsorship | 10 | A sponsor who can remove cross-functional blockers |
+| Champion strength | 10 | An engaged advocate who can mobilize the buying group |
+| Buying-process clarity | 10 | Decision criteria, approvals, and timing |
+| Procurement friction | 10 | Known commercial, legal, security, or vendor steps |
+| Competitive position | 10 | Alternatives, including no action, and comparison criteria |
+| Access to technical evidence | 10 | Representative data, telemetry, or workload access |
+
+Missing evidence scores zero. Hypotheses are capped at 5/10, generated suggestions at 3/10, and a high single-threading risk blocks an **Advance** recommendation. For the same ordered inputs, scoring is deterministic.
 
 ## Visual system
 
-The workbench is designed as a warm **field journal**, not a generic AI control room. Olive navigation,
-clay decision actions, and ivory working surfaces make the evidence trail feel deliberate and human.
-Fraunces gives decision headings an editorial voice; Alegreya Sans keeps dense account notes readable;
-Azeret Mono distinguishes labels, scores, and provenance. Tight radii and restrained shadows keep the
-surface closer to a review record than a polished SaaS dashboard.
+The interface is styled as a field-research journal rather than an AI control room:
 
-## Product tour
+- **olive** navigation separates the working context from the record;
+- **clay** marks decisions and primary actions;
+- **ivory** surfaces keep dense evidence readable;
+- **Fraunces** gives decision headings an editorial voice;
+- **Alegreya Sans** carries account notes and controls;
+- **Azeret Mono** labels scores, states, and provenance.
 
-### Portfolio dashboard
-
-![Opportunity portfolio dashboard](docs/assets/opportunity-dashboard.png)
-
-The dashboard surfaces opportunity stage, value hypothesis, missing evidence, risk, score, and next action so weak deals cannot hide behind activity.
-
-### Account qualification workspace
-
-![Completed qualification workspace](docs/assets/opportunity-account-workspace.png)
-
-Each account workspace keeps signals, workload hypotheses, stakeholders, discovery evidence, qualification, risks, and PoC handoff in one auditable record.
-
-## Workflow
-
-![Opportunity qualification workflow](docs/assets/opportunity-workflow.svg)
-
-1. **Frame the account** — capture a fictional organization, segment, region, and opportunity hypothesis.
-2. **Record sourced signals** — separate the observation, source URL, source type, and collection date from the seller's interpretation.
-3. **Define the workload** — state the AI workload, constraint, measurable business outcome, success criterion, and confidence.
-4. **Map the buying group** — identify business ownership, technical authority, champion strength, and gaps.
-5. **Capture discovery evidence** — organize findings around pain, urgency, metrics, decision process, and competition.
-6. **Qualify transparently** — calculate a deterministic score with visible dimension-level evidence and caps.
-7. **Control the PoC** — convert a qualified hypothesis into acceptance criteria, evidence owners, dates, and rollback conditions.
-8. **Choose the next action** — advance, reshape, nurture, or disqualify based on evidence rather than narrative optimism.
-
-## Qualification model
-
-![Qualification model](docs/assets/qualification-model.svg)
-
-The score is deterministic and capped at 100 points:
-
-| Dimension | Weight | What earns confidence |
-|---|---:|---|
-| Pain and impact | 20 | A specific infrastructure constraint tied to a measurable consequence |
-| Urgency and timing | 15 | A dated business or technical forcing function |
-| Workload fit | 20 | A defined AI workload, baseline, success measure, and technical constraint |
-| Buying group | 15 | Access to business and technical authority plus a credible champion |
-| Decision process | 10 | Evaluation criteria, procurement path, and a decision date |
-| Competitive position | 10 | Known alternatives and a testable differentiation hypothesis |
-| Evidence quality | 10 | Direct, sourced, attributable evidence rather than unsupported inference |
-
-Evidence provenance matters. User-provided and customer-confirmed inputs may receive full credit; inferred inputs are capped; missing evidence scores zero. High-impact risks and absent decision owners can also cap the overall recommendation. The API returns the score breakdown, caps applied, missing evidence, risks, and recommended next action.
+Small radii, fine rules, and restrained shadows keep the product closer to a review dossier than a generic SaaS dashboard.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    UI["Server-rendered workspace"] --> API["FastAPI routes + Pydantic validation"]
+    UI["Jinja workspace"] --> API["FastAPI routes + Pydantic validation"]
     API --> REPO["SQLAlchemy repository"]
     REPO --> DB[("SQLite")]
-    API --> MAP["Evidence-to-score mapper"]
-    MAP --> SCORE["Deterministic qualification engine"]
+    API --> MAP["Evidence mapper"]
+    MAP --> SCORE["Deterministic scoring policy"]
     SCORE --> DECISION["Advance · Reshape · Nurture · Disqualify"]
     API --> EXPORT["Markdown + JSON handoff"]
     API -. optional .-> NARRATIVE["Guarded narrative adapter"]
 ```
 
-The core workflow is offline and deterministic. The web layer does not decide qualification; it validates input and orchestrates domain services. Persistence uses immutable response snapshots so callers cannot mutate stored ORM state. See [docs/architecture.md](docs/architecture.md) for the entity model, request flows, and control boundaries.
+The web layer validates input and orchestrates domain services; it does not decide qualification. The repository returns detached snapshots, while the presentation mapper converts stored evidence into canonical scoring inputs. The optional narrative adapter can revise wording but cannot alter score inputs, caps, or recommendations.
 
-## Commercial relevance
+See [the architecture notes](docs/architecture.md) for the entity model, request flow, and trust boundaries.
 
-- **Pipeline discipline:** exposes missing economic, technical, and decision evidence before forecast confidence rises.
-- **Solution discovery:** connects workload constraints such as GPU starvation, network contention, inference latency, and capacity lead time to measurable business outcomes.
-- **Multi-threading:** distinguishes champions from budget owners, technical authorities, and procurement stakeholders.
-- **Value engineering:** requires a baseline and success measure instead of accepting generic claims about performance or savings.
-- **PoC control:** prevents open-ended evaluations by defining scope, acceptance evidence, owners, dates, rollback, and a decision gate.
-- **Handoff quality:** exports a structured, reviewable record rather than an untraceable meeting summary.
+### Implementation map
 
-## Design Decisions
+```text
+app/
+  main.py          HTTP routes and HTML orchestration
+  repository.py    SQLAlchemy persistence boundary
+  scoring.py       Qualification weights, caps, and thresholds
+  presentation.py  Evidence mapping, view models, and exports
+  enrichment.py    Optional guarded narrative adapter
+templates/         Server-rendered workspace
+static/            Journal theme, layout, forms, and interactions
+tests/             Unit, repository, API, and interface contracts
+```
 
-- **Use deterministic scoring and explicit caps.** Reviewers can see why an opportunity advances or stops. Fixed policy weights reduce seller discretion; validated conversion evidence or a versioned qualification policy would justify changing them.
-- **Store observations separately from interpretation.** This preserves provenance and prevents seller inference from becoming customer fact. The workflow requires more disciplined data entry; an approved CRM or enrichment source with equivalent provenance could reduce that burden.
-- **Bound every PoC with a decision gate.** Acceptance evidence, owners, timing, and rollback conditions prevent open-ended technical activity. Some early opportunities will pause sooner; stronger sponsorship or newly confirmed workload evidence can reopen the gate.
+### API surface
 
-## Data and trust boundary
+| Method | Route | Purpose |
+|---|---|---|
+| `GET` | `/api/accounts` | List portfolio accounts |
+| `POST` | `/api/accounts` | Create an account record |
+| `POST` | `/api/accounts/{id}/signals` | Add a sourced signal |
+| `PUT` | `/api/accounts/{id}/workload` | Set the workload hypothesis |
+| `POST` | `/api/accounts/{id}/stakeholders` | Map a buying-group member |
+| `POST` | `/api/accounts/{id}/discovery` | Add discovery evidence |
+| `GET` | `/api/accounts/{id}/qualification` | Score and persist a qualification result |
+| `GET` | `/api/accounts/{id}/handoff` | Build a structured PoC handoff |
+| `GET` | `/api/accounts/{id}/export?format=json` | Export the structured record |
+| `GET` | `/api/accounts/{id}/export?format=markdown` | Export a review brief |
 
-The repository ships with three clearly labeled fictional scenarios. Runtime records are stored locally in SQLite and are excluded from version control.
+Interactive OpenAPI documentation is available at `/docs` while the app is running.
 
-The Northstar demo is the discovery-stage view of the portfolio's shared private-RAG case: a 70B model class, 45 peak RPS, a 900 ms latency target, 18 TB of governed data, 35% annual growth, and a private or hybrid deployment posture. These remain workload hypotheses until benchmark evidence supports them.
+## Run locally
 
-- No customer names, confidential notes, production credentials, pricing, or revenue data are included.
-- A signal's observation and provenance are stored separately from interpretation.
-- Scores are deterministic; optional narrative text cannot alter score inputs, caps, or recommendations.
-- Generated output is a qualification hypothesis and still requires human review and customer validation.
-- The application is a portfolio workbench, not a CRM, forecasting system, or substitute for legal/commercial approval.
-
-## Quick start
-
-Requirements: Python 3.12 or later.
+Requires Python 3.12 or later.
 
 ```bash
 git clone https://github.com/daetan999/ai-infra-opportunity-workbench.git
 cd ai-infra-opportunity-workbench
 python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -e '.[dev]'
 cp .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000`. The default configuration creates a local SQLite database and seeds only the fictional demo scenarios.
+Open `http://127.0.0.1:8000`. The default configuration creates a local SQLite database and seeds three fictional scenarios.
 
-You can also run the container locally:
+The container runs the same application:
 
 ```bash
 docker build -t opportunity-workbench .
 docker run --rm -p 8000:8000 opportunity-workbench
 ```
 
-## API surface
-
-| Method | Route | Purpose |
-|---|---|---|
-| `GET` | `/health` | Liveness response |
-| `GET` | `/api/accounts` | List portfolio accounts |
-| `POST` | `/api/accounts` | Create a fictional/sanitized account |
-| `POST` | `/api/accounts/{id}/signals` | Add a sourced account signal |
-| `PUT` | `/api/accounts/{id}/workload` | Define or update the workload hypothesis |
-| `POST` | `/api/accounts/{id}/stakeholders` | Map a member of the buying group |
-| `POST` | `/api/accounts/{id}/discovery` | Add categorized discovery evidence |
-| `GET` | `/api/accounts/{id}/qualification` | Calculate and persist the deterministic qualification result |
-| `GET` | `/api/accounts/{id}/handoff` | Build a structured PoC handoff |
-| `GET` | `/api/accounts/{id}/export?format=json` | Export the structured handoff record |
-| `GET` | `/api/accounts/{id}/export?format=markdown` | Export a human-readable qualification brief |
-
-Interactive OpenAPI documentation is available at `/docs` while the app is running.
-
-## Verification
+## Quality checks
 
 ```bash
 make lint
 make test
-make coverage
 ```
 
-The suite covers unit, persistence, API, error-state, and interface contracts. The application package has 96% branch coverage. CI runs lint, tests, an 80% minimum coverage gate, and a clean-checkout container build on every push and pull request.
+`pytest` enforces an 80% minimum coverage threshold configured in `pyproject.toml`. The suite exercises scoring, persistence, workflow APIs, error states, and interface contracts. CI runs lint, tests, the coverage gate, and a clean container build.
 
-## Repository map
+## Data boundary and limitations
 
-```text
-app/
-  main.py          HTTP and HTML orchestration
-  repository.py    SQLAlchemy persistence boundary
-  models.py        Persistent entities
-  scoring.py       Deterministic qualification policy
-  presentation.py  Evidence mapping, view models, and exports
-  enrichment.py    Optional guarded narrative adapter
-templates/         Server-rendered product workspace
-static/            Responsive CSS and interaction JavaScript
-tests/             Unit, repository, API, and UI contract tests
-docs/assets/       Product visuals and verified screenshots
-docs/testing/      RED/GREEN TDD checkpoints
-```
+The repository contains three explicitly fictional scenarios. Runtime records stay in a local, Git-ignored SQLite database.
 
-## Current limitations and roadmap
+- Signals keep observation and provenance separate from interpretation.
+- Scores and recommendations are policy outputs, not forecasts or model predictions.
+- Exported handoffs remain hypotheses requiring human and customer validation.
+- No customer names, confidential notes, credentials, pricing, or revenue data are included.
 
-This public implementation is intentionally single-user, SQLite-backed, and local-first. It does not include authentication, CRM sync, production observability, schema migrations, role-based access, external enrichment, or multi-tenant isolation.
-
-Natural next steps are PostgreSQL with Alembic migrations, authenticated workspaces, approved CRM/public-source connectors, score-policy versioning, audit events, accessible component-level browser tests, and deployment observability.
+The public implementation is single-user and does not include authentication, authorization, CRM synchronization, migrations, rate limiting, production observability, backups, or multi-tenant isolation. Those controls would be required before storing sensitive opportunity data or hosting the application.
 
 ## License
 
@@ -188,4 +170,4 @@ Released under the [MIT License](LICENSE).
 
 ---
 
-[Part of the Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)
+[Enterprise AI Infrastructure Portfolio](https://github.com/daetan999/technical_resume)

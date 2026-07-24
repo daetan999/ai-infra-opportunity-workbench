@@ -1,4 +1,5 @@
 from pathlib import Path
+from struct import unpack
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "templates" / "index.html"
@@ -56,7 +57,6 @@ def test_interface_is_local_accessible_and_progressively_enhanced():
 
 def test_documentation_visuals_are_self_contained_and_readable():
     expected = {
-        "opportunity-workbench-hero.svg": "Opportunity Workbench",
         "opportunity-workflow.svg": "Evidence to decision",
         "qualification-model.svg": "Qualification model",
     }
@@ -70,6 +70,14 @@ def test_documentation_visuals_are_self_contained_and_readable():
         assert "<desc>" in svg
         assert 'href="http://' not in svg
         assert 'href="https://' not in svg
+
+    for filename in (
+        "opportunity-dashboard.png",
+        "opportunity-account-workspace.png",
+    ):
+        png = (ROOT / "docs" / "assets" / filename).read_bytes()
+        assert png.startswith(b"\x89PNG\r\n\x1a\n")
+        assert unpack(">II", png[16:24]) == (1440, 900)
 
 
 def test_user_can_create_an_account_from_the_portfolio():

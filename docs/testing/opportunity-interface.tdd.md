@@ -35,11 +35,15 @@ GREEN: added local system-font styling, responsive navigation, visible focus sta
 
 RED: `test_documentation_visuals_are_self_contained_and_readable` failed while the required Opportunity Workbench assets were absent.
 
-GREEN: added three accessible, self-contained SVGs with descriptive titles and no remote image or font dependencies:
+GREEN: added accessible, self-contained workflow and qualification SVGs with descriptive titles and no remote image or font dependencies:
 
-- `docs/assets/opportunity-workbench-hero.svg`
 - `docs/assets/opportunity-workflow.svg`
 - `docs/assets/qualification-model.svg`
+
+The original synthetic hero SVG was later replaced by two tracked 1440×900 screenshots captured from the seeded application. The interface contract now verifies their PNG signatures and dimensions:
+
+- `docs/assets/opportunity-dashboard.png`
+- `docs/assets/opportunity-account-workspace.png`
 
 ## Verification
 
